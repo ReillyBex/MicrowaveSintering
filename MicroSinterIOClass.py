@@ -17,6 +17,7 @@ class MSIO(tk.Tk):
         self.materials = tk.StringVar()
         self.selectedMaterial = tk.StringVar()
         self.writeFlag = False
+        self.processRunning = False
         self.loadedPresets = tk.StringVar()
         self.selectedPreset = tk.StringVar()
         # create a file path to the presets in the current directory
@@ -167,21 +168,32 @@ class MSIO(tk.Tk):
             self.savePrompt.destroy()
  
     def runProcess(self):
-        # check to make sure fields aren't left empty
-        if self.validateParams() == False:
+        # ensure a process is not already running
+        if self.processRunning == True:
+            showinfo(message="A process is already running! Wait for process to finish or abort the current process to run another.")
             self.runPrompt.destroy()
+            
         else:
-            # get rid of the prompt
-            self.runPrompt.destroy()
-            # let the user know the process has begun
-            showinfo(message="Process will begin when this window is closed. Be cautious of hot materials!")
-            # convert the user inputs to floats
-            runTemp = float(self.targetTemp.get())
-            processTime = float(self.holdTime.get())
-            # insert open loop control code here
+            # check to make sure fields aren't left empty
+            if self.validateParams() == False:
+                self.runPrompt.destroy()
+            else:
+                # get rid of the prompt
+                self.runPrompt.destroy()
+                # change the run flag to True
+                self.processRunning = True
+                # let the user know the process has begun
+                showinfo(message="Process will begin when this window is closed. Be cautious of hot materials!")
+                # convert the user inputs to floats
+                runTemp = float(self.targetTemp.get())
+                processTime = float(self.holdTime.get())
+                # insert open loop control code here
         
     def abortProcess(self): 
         # send a stop signal to the microwave
+        
+        # set the run flag to False
+        self.processRunning = False
             
         # display a message about closing the app
         self.abortPopup = tk.Toplevel(self)
