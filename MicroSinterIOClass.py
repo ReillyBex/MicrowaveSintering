@@ -16,8 +16,8 @@ class MSIO(tk.Tk):
         self.holdTime = tk.StringVar()
         self.materials = tk.StringVar()
         self.selectedMaterial = tk.StringVar()
-        self.writeFlag = False
-        self.processRunning = False
+        self.writeFlag = BooleanVar(value=False)
+        self.processRunning = BooleanVar(value=False)
         self.loadedPresets = tk.StringVar()
         self.selectedPreset = tk.StringVar()
         self.dutyCycle = 0
@@ -53,12 +53,17 @@ class MSIO(tk.Tk):
             showinfo(message="No presets exist. Empty file created")            
         
     def createWidgets(self):
+        # create frames for each group of widgets
+        #self.inputFrame = Frame(self, background='blue').grid(row=0, column=0, rowspan=2, columnspan=2)
+        #self.buttonFrame = Frame(self, background='green').grid(row=3, column=0, columnspan=2, rowspan=4)
+        #self.popupFrame = Frame(self, background='red').grid(row=0, column=0)
+        
         # define the 5 buttons
-        ttk.Button(self, text="Save", command=self.saveEntryPrompt).grid(column=0, row=3, sticky=S, **self.padding)
-        ttk.Button(self, text="Load Preset", command=self.loadEntryPopup).grid(column=1, row=3, sticky=S, **self.padding)
-        ttk.Button(self, text="Run", command=self.confirmProcess).grid(column=0, row=4, sticky=S, **self.padding)
-        ttk.Button(self, text="Abort", command=self.abortProcess).grid(column=1, row=4, sticky=S, **self.padding)
-        ttk.Button(self, text="Close GUI", command=self.closeApp).grid(column=2, row=3, sticky=S, **self.padding)
+        Button(self, text="Save", command=self.saveEntryPrompt, bg='blue').grid(column=1, row=3, sticky=S, **self.padding)
+        Button(self, text="Load Preset", command=self.loadEntryPopup, bg='blue').grid(column=1, row=4, sticky=S, **self.padding)
+        Button(self, text="Run", command=self.confirmProcess, bg='green').grid(column=0, row=3, sticky=S, **self.padding)
+        Button(self, text="Abort", command=self.abortProcess, bg='red').grid(column=0, row=4, sticky=S, **self.padding)
+        Button(self, text="Close GUI", command=self.closeApp).grid(column=2, row=3, sticky=S, **self.padding)
 
         # define the 2 text entry fields
         ttk.Label(self, text="Target Temperature:").grid(column=0, row=0, sticky=E, **self.padding)
@@ -100,8 +105,8 @@ class MSIO(tk.Tk):
         ttk.Label(self.savePrompt, text=text3).grid(row=2, **self.padding)
         
         # prompt user for confirmation
-        ttk.Button(self.savePrompt, text="Save?", command=self.saveEntryFields).grid(row=3, **self.padding)
-        ttk.Button(self.savePrompt, text="Cancel", command=self.cancelSave).grid(row=4, **self.padding)
+        Button(self.savePrompt, text="Save?", command=self.saveEntryFields, bg='green').grid(row=3, **self.padding)
+        Button(self.savePrompt, text="Cancel", command=self.cancelSave, bg='red').grid(row=4, **self.padding)
 
         
     def loadEntryPopup(self):
@@ -128,7 +133,7 @@ class MSIO(tk.Tk):
         
         # bind events and callbacks for the popup
         self.presetList.bind('<<ListboxSelect>>', self.presetSelect)
-        ttk.Button(self.loadPrompt, text='Load Preset', command=self.loadEntryFields).grid(row=1, column=0, **self.padding)
+        Button(self.loadPrompt, text='Load Preset', command=self.loadEntryFields).grid(row=1, column=0, **self.padding)
         
     def loadEntryFields(self):
         # load in the preset parameters and split to elements
@@ -166,7 +171,7 @@ class MSIO(tk.Tk):
                     with open(self.filePath, 'a') as self.preset:
                         self.preset.write(entry)      
             else:
-                showinfo(message="Preset already exists. Use the 'load preset' button") 
+                showinfo(message="Preset already exists.") 
         
             # kill the prompt window        
             self.savePrompt.destroy()
@@ -209,7 +214,7 @@ class MSIO(tk.Tk):
         self.abortPopup = tk.Toplevel(self)
         self.abortPopup.columnconfigure(0, weight=1)
         ttk.Label(self.abortPopup, text="The process was aborted. Be cautious of potentially hot materials!").grid(row=0, **self.padding)
-        ttk.Button(self.abortPopup, text="Return to GUI", command=self.confirmAbort).grid(row=1, **self.padding)
+        Button(self.abortPopup, text="Return to GUI", command=self.confirmAbort).grid(row=1, **self.padding)
         
     def materialSelect(self, event):
         # determine what entry from the list the user picked
@@ -239,8 +244,8 @@ class MSIO(tk.Tk):
         ttk.Label(self.runPrompt, text=text1).grid(row=0, **self.padding)
         ttk.Label(self.runPrompt, text=text2).grid(row=1, **self.padding)
         ttk.Label(self.runPrompt, text=text3).grid(row=2, **self.padding)
-        ttk.Button(self.runPrompt, text="Run Process?", command=self.runProcess).grid(row=3, **self.padding)
-        ttk.Button(self.runPrompt, text="Cancel", command=self.cancelRun).grid(row=4, **self.padding)
+        Button(self.runPrompt, text="Run Process?", command=self.runProcess, bg='green').grid(row=3, **self.padding)
+        Button(self.runPrompt, text="Cancel", command=self.cancelRun, bg='red').grid(row=4, **self.padding)
 
     def confirmAbort(self):
         self.abortPopup.destroy()
@@ -274,7 +279,7 @@ class MSIO(tk.Tk):
         self.closePopup = tk.Toplevel(self)
         self.closePopup.columnconfigure(0, weight=1)
         ttk.Label(self.closePopup, text="GUI will exit now. Be cautious of potentially hot materials!").grid(row=0, **self.padding)
-        ttk.Button(self.closePopup, text="Close the GUI", command=self.killApp).grid(row=1, **self.padding)
+        Button(self.closePopup, text="Close the GUI", command=self.killApp).grid(row=1, **self.padding)
 
     def killApp(self):
         self.destroy()
