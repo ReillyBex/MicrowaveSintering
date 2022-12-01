@@ -78,7 +78,7 @@ class MSIO(tk.Tk):
         materialScroll = ttk.Scrollbar(self)
         ttk.Label(self, text="Material").grid(column=0, row=2, sticky=E, **self.padding)
         self.materialList = tk.Listbox(self, yscrollcommand = materialScroll.set, listvariable=self.materials, selectmode=tk.SINGLE, height=3)
-        self.materialList.insert(1, "Tony's material")
+        self.materialList.insert(1, "Hydroxyapatite")
         self.materialList.insert(2, "dummy material")
         
         # configure list and scroll bar in window
