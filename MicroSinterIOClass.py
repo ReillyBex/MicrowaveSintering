@@ -20,6 +20,8 @@ class MSIO(tk.Tk):
         self.processRunning = False
         self.loadedPresets = tk.StringVar()
         self.selectedPreset = tk.StringVar()
+        self.dutyCycle = 0
+        self.PWM = gpiozero.PWMLED(14, frequency=60)
         # create a file path to the presets in the current directory
         self.filePath = os.getcwd()
         self.filePath = self.filePath + '/presetParams.txt'
@@ -65,7 +67,7 @@ class MSIO(tk.Tk):
 
         ttk.Label(self, text="Hold Time:").grid(column=0, row=1, sticky=E, **self.padding)
         timeEntry = ttk.Entry(self, textvariable=self.holdTime).grid(column=1, row=1, sticky=E, **self.padding)
-        ttk.Label(self, text="Hours").grid(column=2, row=1, sticky=W, **self.padding)
+        ttk.Label(self, text="Minutes").grid(column=2, row=1, sticky=W, **self.padding)
 
         # define the list box and scroll arrows
         materialScroll = ttk.Scrollbar(self)
@@ -91,7 +93,7 @@ class MSIO(tk.Tk):
         
         # generate setting strings and display them
         text1 = "Hold Temp: " + self.targetTemp.get() + " Degrees Celcius"
-        text2 = "Hold time: " + self.holdTime.get() + " Hours"
+        text2 = "Hold time: " + self.holdTime.get() + " Minutes"
         text3 = "Material: " + self.selectedMaterial.get()
         ttk.Label(self.savePrompt, text=text1).grid(row=0, **self.padding)
         ttk.Label(self.savePrompt, text=text2).grid(row=1, **self.padding)
@@ -99,7 +101,9 @@ class MSIO(tk.Tk):
         
         # prompt user for confirmation
         ttk.Button(self.savePrompt, text="Save?", command=self.saveEntryFields).grid(row=3, **self.padding)
-    
+        ttk.Button(self.savePrompt, text="Cancel", command=self.cancelSave).grid(row=4, **self.padding)
+
+        
     def loadEntryPopup(self):
         # open a popup
         self.loadPrompt = tk.Toplevel(self)
@@ -146,7 +150,7 @@ class MSIO(tk.Tk):
             self.savePrompt.destroy()  
         else:
             # generate an entry
-            entry = self.targetTemp.get() + "," + self.holdTime.get() + "," + self.selectedMaterial.get() + "\n"
+            entry = self.targetTemp.get() + "," + self.holdTime.get() + "," + self.selectedMaterial.get()
         
             # read the file
             with open(self.filePath, 'r') as self.preset:
@@ -188,9 +192,15 @@ class MSIO(tk.Tk):
                 runTemp = float(self.targetTemp.get())
                 processTime = float(self.holdTime.get())
                 # insert open loop control code here
-        
+                
+    def lookupDutyCycle(self):
+        # use a look up tabe sorted by material type to find the needed duty cycle for target temp
+        pass
+    
     def abortProcess(self): 
         # send a stop signal to the microwave
+        self.PWM.off()
+        self.dutyCycle = 0.0
         
         # set the run flag to False
         self.processRunning = False
@@ -224,33 +234,40 @@ class MSIO(tk.Tk):
         self.runPrompt.columnconfigure(0, weight=1)
         self.runPrompt.title('Confirm Process Parameters')
         text1 = "Hold Temp: " + self.targetTemp.get() + " Degrees Celcius"
-        text2 = "Hold time: " + self.holdTime.get() + " Hours"
+        text2 = "Hold time: " + self.holdTime.get() + " Minutes"
         text3 = "Material: " + self.selectedMaterial.get()
         ttk.Label(self.runPrompt, text=text1).grid(row=0, **self.padding)
         ttk.Label(self.runPrompt, text=text2).grid(row=1, **self.padding)
         ttk.Label(self.runPrompt, text=text3).grid(row=2, **self.padding)
         ttk.Button(self.runPrompt, text="Run Process?", command=self.runProcess).grid(row=3, **self.padding)
+        ttk.Button(self.runPrompt, text="Cancel", command=self.cancelRun).grid(row=4, **self.padding)
 
     def confirmAbort(self):
         self.abortPopup.destroy()
         
     def validateParams(self):
         # check to make sure fields aren't left empty
-        if self.targetTemp.get() == '':
+        if self.targetTemp.get() == '' or self.targetTemp.get() == 'Target Temp':
             showinfo(message="Temperature field must be populated")
             # return false
             return False
-        elif self.holdTime.get() == '':
+        elif self.holdTime.get() == '' or self.holdTime.get() == ' Hold Time':
             showinfo(message="Time field must be populated")
             # return false
             return False
-        elif self.selectedMaterial.get() == '':
+        elif self.selectedMaterial.get() == '' or self.selectedMaterial.get() == ' Material \n':
             showinfo(message="A material must be selected")
             # return false
             return False   
         else:
             # return True
             return True
+        
+    def cancelRun(self):
+        self.runPrompt.destroy()
+
+    def cancelSave(self):
+        self.savePrompt.destroy()
 
     def closeApp(self):
         # display a message about closing the app
