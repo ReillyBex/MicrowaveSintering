@@ -59,11 +59,11 @@ class MSIO(tk.Tk):
         #self.popupFrame = Frame(self, background='red').grid(row=0, column=0)
         
         # define the 5 buttons
-        Button(self, text="Save", command=self.saveEntryPrompt, bg='blue').grid(column=1, row=3, sticky=S, **self.padding)
-        Button(self, text="Load Preset", command=self.loadEntryPopup, bg='blue').grid(column=1, row=4, sticky=S, **self.padding)
-        Button(self, text="Run", command=self.confirmProcess, bg='green').grid(column=0, row=3, sticky=S, **self.padding)
-        Button(self, text="Abort", command=self.abortProcess, bg='red').grid(column=0, row=4, sticky=S, **self.padding)
-        Button(self, text="Close GUI", command=self.closeApp).grid(column=2, row=3, sticky=S, **self.padding)
+        Button(self, text="Save", command=self.saveEntryPrompt, bg='blue').grid(column=1, row=3, **self.padding)
+        Button(self, text="Load Preset", command=self.loadEntryPopup, bg='blue').grid(column=1, row=4, **self.padding)
+        Button(self, text="Run", command=self.confirmProcess, bg='green').grid(column=0, row=3, **self.padding)
+        Button(self, text="Abort", command=self.abortProcess, bg='red').grid(column=0, row=4, **self.padding)
+        Button(self, text="Close GUI", command=self.closeApp).grid(column=2, row=3, **self.padding)
 
         # define the 2 text entry fields
         ttk.Label(self, text="Target Temperature:").grid(column=0, row=0, sticky=E, **self.padding)
