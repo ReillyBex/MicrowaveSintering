@@ -9,7 +9,7 @@ class MSIO(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Micro Sinter IO')
-        self.geometry("500x400")
+        self.geometry("800x460")
         
         # define the variables needed by the class and set default values
         self.targetTemp = tk.StringVar()
@@ -256,9 +256,15 @@ class MSIO(tk.Tk):
             showinfo(message="Temperature field must be populated")
             # return false
             return False
+        elif not self.targetTemp.get().isnumeric():
+            showinfo(message="Temperature entry must be a number")
+            return False
         elif self.holdTime.get() == '' or self.holdTime.get() == ' Hold Time':
             showinfo(message="Time field must be populated")
             # return false
+            return False
+        elif not self.holdTime.get().isnumeric():
+            showinfo(message="Time entry must be a number")
             return False
         elif self.selectedMaterial.get() == '' or self.selectedMaterial.get() == ' Material \n':
             showinfo(message="A material must be selected")
