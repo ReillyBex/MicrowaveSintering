@@ -12,16 +12,26 @@ class MSIO(tk.Tk):
         self.geometry("800x460")
         
         # define the variables needed by the class and set default values
+        # variables used by widgets
         self.targetTemp = tk.StringVar()
         self.holdTime = tk.StringVar()
         self.materials = tk.StringVar()
         self.selectedMaterial = tk.StringVar()
-        self.writeFlag = BooleanVar(value=False)
-        self.processRunning = BooleanVar(value=False)
         self.loadedPresets = tk.StringVar()
         self.selectedPreset = tk.StringVar()
+        # variables used to check conditions
+        self.writeFlag = BooleanVar(value=False)
+        self.processRunning = BooleanVar(value=False)
+        # variables used in the control loop
         self.dutyCycle = 0
+        self.rampTime = 0
+        self.runTemp = 0
+        self.processTime =0
+        self.tempTime = 0 #used in timer calculations
         self.PWM = gpiozero.PWMLED(14, frequency=60)
+        self.controlState = 0 # 0 for not running, 1 for ramping, 2 for holding
+        self.nextState = 0 # used to switch between ramp, hold, and off
+        self.debug = True
         # create a file path to the presets in the current directory
         self.filePath = os.getcwd()
         self.filePath = self.filePath + '/presetParams.txt'
@@ -107,7 +117,6 @@ class MSIO(tk.Tk):
         # prompt user for confirmation
         Button(self.savePrompt, text="Save?", command=self.saveEntryFields, bg='green').grid(row=3, **self.padding)
         Button(self.savePrompt, text="Cancel", command=self.cancelSave, bg='red').grid(row=4, **self.padding)
-
         
     def loadEntryPopup(self):
         # open a popup
@@ -156,6 +165,8 @@ class MSIO(tk.Tk):
         else:
             # generate an entry
             entry = self.targetTemp.get() + "," + self.holdTime.get() + "," + self.selectedMaterial.get()
+            if self.debug == True:
+                print(entry)
         
             # read the file
             with open(self.filePath, 'r') as self.preset:
@@ -194,13 +205,14 @@ class MSIO(tk.Tk):
                 # let the user know the process has begun
                 showinfo(message="Process will begin when this window is closed. Be cautious of hot materials!")
                 # convert the user inputs to floats
-                runTemp = float(self.targetTemp.get())
-                processTime = float(self.holdTime.get())
-                # insert open loop control code here
-                
-    def lookupDutyCycle(self):
-        # use a look up tabe sorted by material type to find the needed duty cycle for target temp
-        pass
+                self.runTemp = float(self.targetTemp.get())
+                self.processTime = float(self.holdTime.get())
+                # look up how long to run at full power
+                self.rampTime = self.lookUpRampTime(100, self.selectedMaterial.get())
+                # look up what duty cycle to hold at
+                self.dutyCycle = self.lookUpDutyCycle(self.runTemp, self.selectedMaterial.get())
+                # begin the control loop
+                self.controlLoop()
     
     def abortProcess(self): 
         # send a stop signal to the microwave
@@ -251,7 +263,8 @@ class MSIO(tk.Tk):
         self.abortPopup.destroy()
         
     def validateParams(self):
-        # check to make sure fields aren't left empty
+        # check to make sure fields aren't left empty or incorrectly populated
+        # target temp checks
         if self.targetTemp.get() == '' or self.targetTemp.get() == 'Target Temp':
             showinfo(message="Temperature field must be populated")
             # return false
@@ -259,6 +272,7 @@ class MSIO(tk.Tk):
         elif not self.targetTemp.get().isnumeric():
             showinfo(message="Temperature entry must be a number")
             return False
+        # hold time checks
         elif self.holdTime.get() == '' or self.holdTime.get() == ' Hold Time':
             showinfo(message="Time field must be populated")
             # return false
@@ -266,12 +280,16 @@ class MSIO(tk.Tk):
         elif not self.holdTime.get().isnumeric():
             showinfo(message="Time entry must be a number")
             return False
+        elif self.holdTime.get() == '0':
+                showinfo(message="Time entry may not be 0")
+                return False
+        # material checks
         elif self.selectedMaterial.get() == '' or self.selectedMaterial.get() == ' Material \n':
             showinfo(message="A material must be selected")
             # return false
             return False   
         else:
-            # return True
+            # return True only if all other checks pass
             return True
         
     def cancelRun(self):
@@ -286,10 +304,93 @@ class MSIO(tk.Tk):
         self.closePopup.columnconfigure(0, weight=1)
         ttk.Label(self.closePopup, text="GUI will exit now. Be cautious of potentially hot materials!").grid(row=0, **self.padding)
         Button(self.closePopup, text="Close the GUI", command=self.killApp).grid(row=1, **self.padding)
-
+        
+    def lookUpRampTime(self, dutyCycle, material):
+        # insert look up tables here
+        return 0
+        
+    def lookUpDutyCycle(self, temp, material):
+        # insert look up tables here
+        return 0
+        
+    def eventCheck(self):
+        # switch case statements
+        if self.controlState == 0:
+                # if the process run flag is set to true when this is checked, transition to state 1
+                if self.processRunning == True:
+                        self.nextState = 1
+                else: 
+                        self.nextState = 0
+        elif self.controlState == 1:
+                if self.processRunning == False:
+                        # the abort process button has been pushed and we need to stop
+                        self.nextState = 0
+                # check time
+                elif self.currentTime() <= self.rampTime:
+                        # timer has not expired, still ramping
+                        self.nextState = 1
+                else: 
+                        # switch to holding
+                        self.nextState = 2
+        elif self.controlState == 2:
+                if self.processRunning == False:
+                        # the abort process button has been pushed and we need to stop
+                        self.nextState = 0
+                elif self.currentTime() <= self.processTime:
+                        # timer has not expired, still holding
+                        self.nextState = 2
+                else:
+                        # switch to off
+                        self.nextState = 0
+                        
+    def eventService(self):
+        if self.controlState == 0:
+                if self.nextState == 1:
+                        self.PWM.value = 1
+                        #self.tempTime = (clock stuff)
+                elif self.nextState == 0:
+                        # we don't need to do anything for this
+                        pass
+        elif self.controlState == 1:
+                if self.nextState == 1:
+                        # looping back to continue ramping
+                        pass
+                elif self.nextState == 2: 
+                        # switching to hold temp
+                        self.PWM.value = self.dutyCycle
+                        #self.tempTime = (clock stuff)
+                elif self.nextState == 0: 
+                        # process is aborted, turn things off
+                        self.dutyCycle = 0
+                        self.PWM.value = 0
+        elif self.controlState == 2:
+                if self.nextState == 2:
+                        # looping back to continue holding
+                        pass
+                elif self.nextState == 0: 
+                        # process is over, turn things off
+                        self.dutyCycle = 0
+                        self.PWM.value = 0
+                        # set the flag back to false so we can start another process
+                        self.processRunning = False
+        self.controlState = self.nextState
+                        
+    def controlLoop(self):
+            self.eventCheck()
+            if self.debug == True:
+                print('control loop active')
+                print(self.controlState)
+                print(self.nextState)
+                print('\n')
+            self.eventService()
+            self.after(1000, self.controlLoop)
+                        
+    def currentTime(self):
+            return 0
+    
     def killApp(self):
         self.destroy()
-      
+             
 #run the app
 if __name__ == "__main__":
     app = MSIO()
