@@ -55,4 +55,14 @@ This takes the selected material from the main GUI list and sets it to be the ma
 This takes the selected preset in the "load presets" pop-up and sets it to be split up by the loadEntryFields() function.    
 ###### runProcess()   
 This starts the process running by using lookUpDutyCycle() and lookUpRampTime() to set the appropriate timers and steady state duty cycle to be sent to the magnetron.    
-
+###### saveEntryFields()   
+This takes the current values of the run parameters and generates an entry. If the entry is not already present in the preset file, it is added for future use.    
+###### saveEntryPrompt() 
+This creates a pop-up that displays the current process parameters and asks the user to confirm or cancel the save function.     
+###### validateParams()   
+This runs the currently input process parameters through various checks to ensure the parameters are actually usable by the program. It displays errors prompting the user to make the necessary changes so the process can run.    
+### Future work   
+Look up tables that correlate a material with duty cycles and temperature profiles need to be generated then input in a manner such that they are easy to search and easy to adjust. Perhaps having them be in an external file of some sort? each material getting it's own file (filename is what appears in the material selection box). This way users wouldn't need to make any adjustments to the code or appimage and could simply add a new file once testing is complete.     
+This would also require a change to how the material list is generated. The program would need to look through the current directory and grab any file names that are not the presetParams.txt and load those in as material options. In otherwords, the material selection options should *not* be hardcoded into the app.     
+     
+A way to allow users to test new materials should also be added. This could correspond to the GUI prompting users to take measurements at the appropriate times and input measured temp or something. Need to work more on this potentially. 
