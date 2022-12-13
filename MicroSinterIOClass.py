@@ -299,6 +299,9 @@ class MSIO(tk.Tk):
         self.savePrompt.destroy()
 
     def closeApp(self):
+        # send a stop signal to the microwave
+        self.PWM.off()
+        self.dutyCycle = 0.0
         # display a message about closing the app
         self.closePopup = tk.Toplevel(self)
         self.closePopup.columnconfigure(0, weight=1)
