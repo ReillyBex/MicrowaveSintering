@@ -50,12 +50,6 @@ class MSIO(tk.Tk):
         # set up the padding between widgets
         self.padding = {'padx': 5, 'pady': 5}
 
-        # create the primary widgets
-        self.createWidgets()
-        
-        # start the control loop in the background
-        self.controlLoop()
-        
         # check if the preset file exists, create the file if not
         if os.path.exists(self.presetFilePath):
             #do nothing to it for now
@@ -74,6 +68,12 @@ class MSIO(tk.Tk):
                 # create the directory
                 os.mkdir(self.materialsDirectory)
                 showinfo(message='Materials directory not present. Please add material profiles to new directory.')
+                
+        # create the primary widgets
+        self.createWidgets()
+        
+        # start the control loop in the background
+        self.controlLoop()
         
     def createWidgets(self):
         # create frames for each group of widgets
