@@ -1,4 +1,3 @@
-#this line is a git test
 import gpiozero
 import os
 import tkinter as tk
@@ -34,8 +33,9 @@ class MSIO(tk.Tk):
         self.nextState = 0 # used to switch between ramp, hold, and off
         self.debug = True
         # create a file path to the presets in the current directory
-        self.filePath = os.getcwd()
-        self.filePath = self.filePath + '/presetParams.txt'
+        self.currentDirectory = os.getcwd()
+        self.presetFilePath = self.currentDirectory + '/presetParams.txt'
+        self.materialsDirectory = self.currentDirectory + '/materials'
         
         # set up the app grid to be 3 x 5
         self.columnconfigure(0, weight=1)
@@ -53,15 +53,27 @@ class MSIO(tk.Tk):
         # create the primary widgets
         self.createWidgets()
         
+        # start the control loop in the background
+        self.controlLoop()
+        
         # check if the preset file exists, create the file if not
-        if os.path.exists(self.filePath):
+        if os.path.exists(self.presetFilePath):
             #do nothing to it for now
             pass 
         else:
             #create the file
-            with open(self.filePath, 'w') as self.preset:
+            with open(self.presetFilePath, 'w') as self.preset:
                 self.preset.write("Target Temp, Hold Time, Material \n")
-            showinfo(message="No presets exist. Empty file created")            
+            showinfo(message="No presets exist. Empty file created")    
+            
+        # check to see if the materials folder exists, create it if not
+        if os.path.exists(self.materialsDirectory):
+                #do nothing to it
+                pass
+        else: 
+                # create the directory
+                os.mkdir(self.materialsDirectory)
+                showinfo(message='Materials directory not present. Please add material profiles to new directory.')
         
     def createWidgets(self):
         # create frames for each group of widgets
@@ -89,9 +101,15 @@ class MSIO(tk.Tk):
         materialScroll = ttk.Scrollbar(self)
         ttk.Label(self, text="Material").grid(column=0, row=2, sticky=E, **self.padding)
         self.materialList = tk.Listbox(self, yscrollcommand = materialScroll.set, listvariable=self.materials, selectmode=tk.SINGLE, height=3)
-        self.materialList.insert(1, "Hydroxyapatite")
-        self.materialList.insert(2, "dummy material")
-        
+        # read in the materials from the folder
+        self.materials = os.listdir(self.materialsDirectory)
+        if self.debug:
+                print('materials are: ')
+                print(self.materials)
+        i = 0
+        for item in self.materials:
+                self.materialList.insert(i, item) 
+                i += 1
         # configure list and scroll bar in window
         self.materialList.grid(column=1, row=2, sticky=tk.NS, **self.padding)
         materialScroll.config( command = self.materialList.yview)
@@ -130,7 +148,7 @@ class MSIO(tk.Tk):
         self.presetList = tk.Listbox(self.loadPrompt, yscrollcommand = presetScroll.set, listvariable=self.loadedPresets, selectmode=tk.SINGLE, height=6, width=30)
         
         # read in the presets from the file
-        with open(self.filePath, 'r') as self.preset:
+        with open(self.presetFilePath, 'r') as self.preset:
             i = 1
             for line in self.preset:
                 self.presetList.insert(i, line)
@@ -170,7 +188,7 @@ class MSIO(tk.Tk):
                 print(entry)
         
             # read the file
-            with open(self.filePath, 'r') as self.preset:
+            with open(self.presetFilePath, 'r') as self.preset:
                 # ensure the preset doesn't already exist
                 for line in self.preset:
                     if line == entry:
@@ -180,7 +198,7 @@ class MSIO(tk.Tk):
                     
             # rite the entry if it doesn't exist already        
             if self.writeFlag == True:
-                    with open(self.filePath, 'a') as self.preset:
+                    with open(self.presetFilePath, 'a') as self.preset:
                         self.preset.write(entry)      
             else:
                 showinfo(message="Preset already exists.") 
@@ -265,6 +283,16 @@ class MSIO(tk.Tk):
         
     def validateParams(self):
         # check to make sure fields aren't left empty or incorrectly populated
+        # check that the material is from our list of known materials
+        for item in self.materials:
+                if self.debug:
+                        print(self.selectedMaterial.get())
+                        print(item)
+                if self.selectedMaterial.get() == item:
+                        materialExists = True
+                        break
+                else:
+                        materialExists = False
         # target temp checks
         if self.targetTemp.get() == '' or self.targetTemp.get() == 'Target Temp':
             showinfo(message="Temperature field must be populated")
@@ -289,9 +317,14 @@ class MSIO(tk.Tk):
             showinfo(message="A material must be selected")
             # return false
             return False   
+        elif materialExists == False:
+                showinfo(message='Material not in list of accepted options. Double check your preset parameters.')
+                return False
         else:
             # return True only if all other checks pass
             return True
+        
+        
         
     def cancelRun(self):
         self.runPrompt.destroy()
@@ -311,6 +344,13 @@ class MSIO(tk.Tk):
         
     def lookUpRampTime(self, dutyCycle, material):
         # insert look up tables here
+        # read the file
+        with open(os.path.join(self.materialsDirectory, self.selectedMaterial.get()), 'r') as materialFile:
+                # do stuff to the data
+                if self.debug:
+                        for line in materialFile:
+                                print(line)
+
         return 0
         
     def lookUpDutyCycle(self, temp, material):
