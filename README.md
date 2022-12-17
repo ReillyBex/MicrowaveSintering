@@ -31,7 +31,9 @@ This is the state machine loop for controlling the process. It contails the func
 ###### createWidgets()    
 This creates the entry boxes, the material selection list, as well as the 5 buttons on the main window.    
 ###### currentTime()   
-This gets the current time relative to the start of the process. *This still needs development and currently just returns a value of 0.*    
+This gets the current time relative to the start of the process. *This still needs development and currently just returns a value of 0.*  
+###### debugFunc()     
+This is just a function that can be filled with anything you want to debug. It is run before the main loop so you can see if functions have runtime errors or unexpected behavior.     
 ###### eventCheck()   
 This has the logic to check for events based on the current state of the machine. Events are: 
 1. timer expiers
@@ -45,10 +47,10 @@ This is the actual function that destroys the GUI. It is called by closeApp().
 This takes the selected entry of the presets and splits it into the appropriate parameters. It also closes the pop-up from which the user selects a preset.     
 ###### loadEntryPopup()
 This generates a pop-up with a scoll list that displays all the saved presets. The user can then select one and load it into the process parameters to be run.     
-###### lookUpDutyCycle()    
-This takes the input hold temp and finds out what duty cycle has that as it's steady state temperature. *this requires more testing to generate the appropriate look up tables.*     
-###### lookUpRampTime()   
-This takes the input hold temperature and finds out how long it will take to reach that on full power. *this requires more testing to generate the appropriate look up tables.*     
+###### lookUpDutyCycle(temperature, material)    
+This takes the input hold temp and finds out what duty cycle has that as it's steady state temperature. It creates a list of the last temperature in each row of measurements, which we are assuming to be steady state temperatures. Once this list has been generated, it then checks if the items in that list of temperatures are within the specified tolerance of the input hold temperature. It calculates the duty cycle if it is, and returns 0 if not. 
+###### lookUpRampTime(temperature, material)   
+This takes the input hold temperature and finds out how long it will take to reach that on full power. If the input temperature matches an entry on the 100% duty cycle row exactly, it returns the time associated with that entry. Otherwise, it linearly interpolates the time required by finding the data points on either side. 
 ###### materialSelect()   
 This takes the selected material from the main GUI list and sets it to be the material for the process.    
 ###### presetSelect()   
@@ -62,7 +64,8 @@ This creates a pop-up that displays the current process parameters and asks the 
 ###### validateParams()   
 This runs the currently input process parameters through various checks to ensure the parameters are actually usable by the program. It displays errors prompting the user to make the necessary changes so the process can run.    
 ### Future work   
-Look up tables that correlate a material with duty cycles and temperature profiles need to be generated then input in a manner such that they are easy to search and easy to adjust. Perhaps having them be in an external file of some sort? each material getting it's own file (filename is what appears in the material selection box). This way users wouldn't need to make any adjustments to the code or appimage and could simply add a new file once testing is complete.     
-This would also require a change to how the material list is generated. The program would need to look through the current directory and grab any file names that are not the presetParams.txt and load those in as material options. In otherwords, the material selection options should *not* be hardcoded into the app.     
-     
-A way to allow users to test new materials should also be added. This could correspond to the GUI prompting users to take measurements at the appropriate times and input measured temp or something. Need to work more on this potentially. 
+Testing to ensure that the look up tables placed in the materials directory function as expected.      
+Also adding in more comprehensive checks to tell users if the tables provided are bad or need formating adjustments made. The look up functions expect a specific format and any changes from that precise layout will likely cause errors or some sort.      
+Obviously testing to generate better temperature profiles for hydroxyappatite so we can actually validate the model.       
+Leaving in psuedocode for closed loop control if future groups want to implement that as well.      
+Perhaps a function that writes the look up table for the user? hmmmmmmmm. 
