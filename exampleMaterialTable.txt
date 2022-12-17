@@ -1,5 +1,5 @@
-# All material look up tables MUST be in UTF-8 encoding or else the GUI will not be able to properly read them in. The table should be 10 rows or 20 rows, either for 10% or 5% duty cycle steps, respectively. The collumns should be temperature measurements in degrees Celcius in either 10 or 5 minute incrememnts. 
-# the first line will be information that the GUI needs to read the table. Namely, what increments of duty cycle and time are being used. This allows the user to create tables with better resolution and implement them in the future. The remaining 10 or 20 rows should be populated with temperature measurements. 
+# All material look up tables MUST be in UTF-8 encoding or else the GUI will not be able to properly read them in. The table should be an even number of rows, and duty cycle steps should thus evenly divide into 100. The collumns should be temperature measurements in degrees Celcius at each time step. 
+# the first line will be information that the GUI needs to read the table. Namely, what increments of duty cycle and time are being used, and also how tightly the user wants to specify hold temperature. This allows the user to create tables with better resolution and implement them in the future. The remaining rows should be populated with temperature measurements. 
 # 100% duty cycle should always be at the top, and decrease from there!
 
 10,5,30 #10% duty cycle increments, 5 minute time increments, +- 30 degree tolerance
