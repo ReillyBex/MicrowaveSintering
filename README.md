@@ -31,7 +31,7 @@ This is the state machine loop for controlling the process. It contails the func
 ###### createWidgets()    
 This creates the entry boxes, the material selection list, as well as the 5 buttons on the main window.    
 ###### currentTime()   
-This gets the current time relative to the start of the process. *This still needs development and currently just returns a value of 0.*  
+This gets the current time relative to the start of the process. a variable called self.tempTime is set with time.monotonic() in the control loop to be the time that each state begins. This is then compared to the current value of time.monotonic() and the difference is divided by 60 to return minutes since that is what the user inputs and the look up tables are coded for. 
 ###### debugFunc()     
 This is just a function that can be filled with anything you want to debug. It is run before the main loop so you can see if functions have runtime errors or unexpected behavior.     
 ###### eventCheck()   
