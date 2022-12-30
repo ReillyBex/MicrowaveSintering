@@ -459,7 +459,7 @@ class MSIO(tk.Tk):
         if self.controlState == 0:
                 if self.nextState == 1:
                         self.PWM.value = 1
-                        #self.tempTime = (clock stuff)
+                        self.tempTime = time.monotonic()
                 elif self.nextState == 0:
                         # we don't need to do anything for this
                         pass
@@ -470,7 +470,7 @@ class MSIO(tk.Tk):
                 elif self.nextState == 2:
                         # switching to hold temp
                         self.PWM.value = self.dutyCycle
-                        #self.tempTime = (clock stuff)
+                        self.tempTime = time.monotonic()
                 elif self.nextState == 0:
                         # process is aborted, turn things off
                         self.dutyCycle = 0
@@ -498,7 +498,9 @@ class MSIO(tk.Tk):
             self.after(1000, self.controlLoop)
 
     def currentTime(self):
-            return 0
+        currentTime = time.monotonic()
+        timeElapsed = (currentTime - self.tempTime) / 60
+            return timeElapsed
 
     def killApp(self):
         self.destroy()
