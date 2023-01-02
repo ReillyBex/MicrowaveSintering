@@ -64,12 +64,12 @@ class MSIO(tk.Tk):
 
         # check to see if the materials folder exists, create it if not
         if os.path.exists(self.materialsDirectory):
-                #do nothing to it
-                pass
+            #do nothing to it
+            pass
         else:
-                # create the directory
-                os.mkdir(self.materialsDirectory)
-                showinfo(message='Materials directory not present. Please add material profiles to new directory.')
+            # create the directory
+            os.mkdir(self.materialsDirectory)
+            showinfo(message='Materials directory not present. Please add material profiles to new directory.')
 
         # create the primary widgets
         self.createWidgets()
@@ -102,12 +102,12 @@ class MSIO(tk.Tk):
         # read in the materials from the folder
         self.materials = os.listdir(self.materialsDirectory)
         if self.debug:
-                print('materials are: ')
-                print(self.materials)
+            print('materials are: ')
+            print(self.materials)
         i = 0
         for item in self.materials:
-                self.materialList.insert(i, item)
-                i += 1
+            self.materialList.insert(i, item)
+            i += 1
         # configure list and scroll bar in window
         self.materialList.grid(column=1, row=2, sticky=tk.NS, **self.padding)
         materialScroll.config( command = self.materialList.yview)
@@ -197,8 +197,8 @@ class MSIO(tk.Tk):
 
             # rite the entry if it doesn't exist already
             if self.writeFlag == True:
-                    with open(self.presetFilePath, 'a') as self.preset:
-                        self.preset.write(entry)
+                with open(self.presetFilePath, 'a') as self.preset:
+                    self.preset.write(entry)
             else:
                 showinfo(message="Preset already exists.")
 
@@ -229,15 +229,15 @@ class MSIO(tk.Tk):
                 self.dutyCycle = self.lookUpDutyCycle(self.processTemp, self.selectedMaterial.get())
                 #check to see that duty cycle completed successfully
                 if self.dutyCycle == 0:
-                        # if we haven't found an acceptable duty cycle, let the user know the parameters are invalid
-                        showinfo(message='Unable to find a duty cycle that matches the tolerance specified. Please adjust the hold temp or material profile')
+                    # if we haven't found an acceptable duty cycle, let the user know the parameters are invalid
+                    showinfo(message='Unable to find a duty cycle that matches the tolerance specified. Please adjust the hold temp or material profile')
                 else:
-                        if self.debug:
-                                print('process duty cycle and ramp time: ', self.dutyCycle, self.rampTime)
-                        # change the run flag to True
-                        self.processRunning = True
-                        # begin the control loop
-                        self.controlLoop()
+                    if self.debug:
+                        print('process duty cycle and ramp time: ', self.dutyCycle, self.rampTime)
+                    # change the run flag to True
+                    self.processRunning = True
+                    # begin the control loop
+                    self.controlLoop()
 
     def abortProcess(self):
         # send a stop signal to the microwave
@@ -291,14 +291,14 @@ class MSIO(tk.Tk):
         # check to make sure fields aren't left empty or incorrectly populated
         # check that the material is from our list of known materials
         for item in self.materials:
-                if self.debug:
-                        print(self.selectedMaterial.get())
-                        print(item)
-                if self.selectedMaterial.get() == item:
-                        materialExists = True
-                        break
-                else:
-                        materialExists = False
+            if self.debug:
+                print(self.selectedMaterial.get())
+                print(item)
+            if self.selectedMaterial.get() == item:
+                materialExists = True
+                break
+            else:
+                materialExists = False
         # target temp checks
         if self.targetTemp.get() == '' or self.targetTemp.get() == 'Target Temp':
             showinfo(message="Temperature field must be populated")
@@ -352,167 +352,167 @@ class MSIO(tk.Tk):
         rampTime = 0
         # read the file
         with open(os.path.join(self.materialsDirectory, material), newline='', encoding='utf-8') as materialFile:
-                # do stuff to the data
-                #if self.debug:
-                        #for line in materialFile:
-                                #print(line)
+            # do stuff to the data
+            #if self.debug:
+                #for line in materialFile:
+                    #print(line)
                 
-                lookUpTable = csv.reader(materialFile, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
-                lineCount = 0
-                for row in lookUpTable:
-                        # the first line contains info about how the data is organized
-                        if lineCount == 0:
-                                dutyStep = row[0]
-                                timeStep = row[1]
-                                tol = row[2]
-                                lineCount += 1
-                                if self.debug:
-                                        print('duty cycle, time step, tolerance')
-                                        print(dutyStep, timeStep, tol)
-                        # the next line is the 100% duty cycle line so we need to use it
-                        else:
-                                readingCount = 1
-                                # look at each temperature in the row, keeping track of the number of temperatures we have looked at to back out time
-                                for reading in row:
-                                        # if our desired temperature is exactly equal to the temperature we are on
-                                        if reading == temp:
-                                                rampTime = readingCount * timeStep
-                                                return rampTime
-                                        # if our reading is above the temperature we desire
-                                        elif reading >= temp:
-                                                # linearly interpolate the ramp time
-                                                thisTime = readingCount * timeStep
-                                                lastTime = thisTime - timeStep
-                                                thisTemp = reading
-                                                lastTemp = row[readingCount - 2]
-                                                rampTime = lastTime + ((temp - lastTemp) * (thisTime - lastTime) / (thisTemp - lastTemp))
-                                                return rampTime
-                                        # otherwise check the next reading
-                                        else:
-                                                readingCount +=1
+            lookUpTable = csv.reader(materialFile, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
+            lineCount = 0
+            for row in lookUpTable:
+                # the first line contains info about how the data is organized
+                if lineCount == 0:
+                    dutyStep = row[0]
+                    timeStep = row[1]
+                    tol = row[2]
+                    lineCount += 1
+                    if self.debug:
+                        print('duty cycle, time step, tolerance')
+                        print(dutyStep, timeStep, tol)
+                # the next line is the 100% duty cycle line so we need to use it
+                else:
+                    readingCount = 1
+                    # look at each temperature in the row, keeping track of the number of temperatures we have looked at to back out time
+                    for reading in row:
+                        # if our desired temperature is exactly equal to the temperature we are on
+                            if reading == temp:
+                                rampTime = readingCount * timeStep
+                                return rampTime
+                            # if our reading is above the temperature we desire
+                            elif reading >= temp:
+                                # linearly interpolate the ramp time
+                                thisTime = readingCount * timeStep
+                                lastTime = thisTime - timeStep
+                                thisTemp = reading
+                                lastTemp = row[readingCount - 2]
+                                rampTime = lastTime + ((temp - lastTemp) * (thisTime - lastTime) / (thisTemp - lastTemp))
+                                return rampTime
+                            # otherwise check the next reading
+                            else:
+                                readingCount +=1
 
     def lookUpDutyCycle(self, temp, material):
         dutyCycle = 0
         # read the file
         with open(os.path.join(self.materialsDirectory, material), newline='', encoding='utf-8') as materialFile:
-                # do stuff to the data
-                lookUpTable = csv.reader(materialFile, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
-                lineCount = 0
-                tempArray = []
-                for row in lookUpTable:
-                        # the first line contains info about how the data is organized
-                        if lineCount == 0:
-                                dutyStep = row[0]
-                                timeStep = row[1]
-                                tol = row[2]
-                                lineCount += 1
-                                if self.debug:
-                                        print('duty cycle, time step, tolerance')
-                                        print(dutyStep, timeStep, tol)
-                        # the next lines contain the temperature data
-                        else:
-                                #we assume that the last item in the row is the steady state temp
-                                tempArray.append(row[-1])
-                                lineCount += 1
-                # now that we have a steady state temp list, find where our desired temp is within tolerance
-                i = 0
-                for temps in tempArray:
-                        # if the desired temp is within the reading
+            # do stuff to the data
+            lookUpTable = csv.reader(materialFile, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
+            lineCount = 0
+            tempArray = []
+            for row in lookUpTable:
+                # the first line contains info about how the data is organized
+                if lineCount == 0:
+                    dutyStep = row[0]
+                    timeStep = row[1]
+                    tol = row[2]
+                    lineCount += 1
+                    if self.debug:
+                        print('duty cycle, time step, tolerance')
+                        print(dutyStep, timeStep, tol)
+                # the next lines contain the temperature data
+                else:
+                    #we assume that the last item in the row is the steady state temp
+                    tempArray.append(row[-1])
+                    lineCount += 1
+            # now that we have a steady state temp list, find where our desired temp is within tolerance
+            i = 0
+            for temps in tempArray:
+                # if the desired temp is within the reading
                         if temps <= temp + tol and temps >= temp - tol:
-                                dutyCycle = 1 - (i*dutyStep/100)
-                                return dutyCycle
+                            dutyCycle = 1 - (i*dutyStep/100)
+                            return dutyCycle
                         i += 1
-                # if our for loop didn't find an acceptable duty cycle, return 0 so nothing will turn on
-                return 0
+            # if our for loop didn't find an acceptable duty cycle, return 0 so nothing will turn on
+            return 0
 
     def eventCheck(self):
         # switch case statements
         if self.controlState == 0:
-                # if the process run flag is set to true when this is checked, transition to state 1
-                if self.processRunning == True:
-                        self.nextState = 1
-                else:
-                        self.nextState = 0
+            # if the process run flag is set to true when this is checked, transition to state 1
+            if self.processRunning == True:
+                self.nextState = 1
+            else:
+                self.nextState = 0
         elif self.controlState == 1:
-                if self.processRunning == False:
-                        # the abort process button has been pushed and we need to stop
-                        self.nextState = 0
-                # check time
-                elif self.currentTime() <= self.rampTime:
-                        # timer has not expired, still ramping
-                        self.nextState = 1
-                else:
-                        # switch to holding
-                        self.nextState = 2
+            if self.processRunning == False:
+                # the abort process button has been pushed and we need to stop
+                self.nextState = 0
+            # check time
+            elif self.currentTime() <= self.rampTime:
+                # timer has not expired, still ramping
+                self.nextState = 1
+            else:
+                # switch to holding
+                self.nextState = 2
         elif self.controlState == 2:
-                if self.processRunning == False:
-                        # the abort process button has been pushed and we need to stop
-                        self.nextState = 0
-                elif self.currentTime() <= self.processTime:
-                        # timer has not expired, still holding
-                        self.nextState = 2
-                else:
-                        # switch to off
-                        self.nextState = 0
+            if self.processRunning == False:
+                # the abort process button has been pushed and we need to stop
+                self.nextState = 0
+            elif self.currentTime() <= self.processTime:
+                # timer has not expired, still holding
+                self.nextState = 2
+            else:
+                # switch to off
+                self.nextState = 0
 
     def eventService(self):
         if self.controlState == 0:
-                if self.nextState == 1:
-                        self.PWM.value = 1
-                        self.tempTime = time.monotonic()
-                elif self.nextState == 0:
-                        # we don't need to do anything for this
-                        pass
+            if self.nextState == 1:
+                self.PWM.value = 1
+                self.tempTime = time.monotonic()
+            elif self.nextState == 0:
+                # we don't need to do anything for this
+                pass
         elif self.controlState == 1:
-                if self.nextState == 1:
-                        # looping back to continue ramping
-                        pass
-                elif self.nextState == 2:
-                        # switching to hold temp
-                        self.PWM.value = self.dutyCycle
-                        self.tempTime = time.monotonic()
-                elif self.nextState == 0:
-                        # process is aborted, turn things off
-                        self.dutyCycle = 0
-                        self.PWM.value = 0
+            if self.nextState == 1:
+                # looping back to continue ramping
+                pass
+            elif self.nextState == 2:
+                # switching to hold temp
+                self.PWM.value = self.dutyCycle
+                self.tempTime = time.monotonic()
+            elif self.nextState == 0:
+                # process is aborted, turn things off
+                self.dutyCycle = 0
+                self.PWM.value = 0
         elif self.controlState == 2:
-                if self.nextState == 2:
-                        # looping back to continue holding
-                        pass
-                elif self.nextState == 0:
-                        # process is over, turn things off
-                        self.dutyCycle = 0
-                        self.PWM.value = 0
-                        # set the flag back to false so we can start another process
-                        self.processRunning = False
+            if self.nextState == 2:
+                # looping back to continue holding
+                 pass
+            elif self.nextState == 0:
+                # process is over, turn things off
+                self.dutyCycle = 0
+                self.PWM.value = 0
+                # set the flag back to false so we can start another process
+                self.processRunning = False
         self.controlState = self.nextState
 
     def controlLoop(self):
-            self.eventCheck()
-            if self.debug == True:
-                print('control loop active')
-                print(self.controlState)
-                print(self.nextState)
-                print('\n')
-            self.eventService()
-            self.after(1000, self.controlLoop)
+        self.eventCheck()
+        if self.debug == True:
+            print('control loop active')
+            print(self.controlState)
+            print(self.nextState)
+            print('\n')
+        self.eventService()
+        self.after(1000, self.controlLoop)
 
     def currentTime(self):
         currentTime = time.monotonic()
         timeElapsed = (currentTime - self.tempTime) / 60
-            return timeElapsed
+        return timeElapsed
 
     def killApp(self):
         self.destroy()
 
     def debugFunc(self):
-            print(self.lookUpRampTime(1200, 'hydroxyappatite.csv'))
-            print(self.lookUpDutyCycle(1250, 'hydroxyappatite.csv'))
+        print(self.lookUpRampTime(1200, 'hydroxyappatite.csv'))
+        print(self.lookUpDutyCycle(1250, 'hydroxyappatite.csv'))
 
 
 #run the app
 if __name__ == "__main__":
     app = MSIO()
     if app.debug == True: 
-            app.debugFunc()
+        app.debugFunc()
     app.mainloop()
