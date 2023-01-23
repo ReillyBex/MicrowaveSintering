@@ -3,7 +3,7 @@ Repository for the code that runs the microwave furnace. The main code block is 
   
 Other code that will (potentially) be added will be the scripts used to configure a raspberry pi from scratch and download all the necessary packages and what not.   
   
-Alternatively, a compiled version of the GUI will be included here. This would allow future users to simply download the executable appimage and run it on any linux system with compatible hardware, removing the need for a user to download and properly configure packages before running the program.    
+Alternatively, a compiled version of the GUI will be included here. This would allow future users to simply download the executable appimage and run it on any linux system with compatible hardware, removing the need for a user to download and properly configure packages before running the program. This is created with a tool called "auto-py-to-exe". Simply use PIP to install it and run it from the command line. Helpful debugging info is found [here](https://nitratine.net/blog/post/issues-when-using-auto-py-to-exe/)             
 # Basic Overview
 The main window shows entry fields for holding temperature and hold time, and also contains a list of materials the user can select from. leaving these blank and attempting to hit the "run" button will result in an error.  
   
