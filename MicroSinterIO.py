@@ -30,7 +30,7 @@ class MSIO(tk.Tk):
         self.rampTime = 0
         self.processTemp = 0
         self.processTime =0
-        self.PWM = gpiozero.PWMLED(22, frequency=60)
+        self.PWM = gpiozero.PWMLED(6, frequency=60)
         self.controlState = 0 # 0 for not running, 1 for ramping, 2 for holding
         self.nextState = 0 # used to switch between ramp, hold, and off
         self.debug = False # turns on or off debug print outs
