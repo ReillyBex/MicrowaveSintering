@@ -22,6 +22,8 @@ class MSIO(tk.Tk):
         self.selectedMaterial = tk.StringVar()
         self.loadedPresets = tk.StringVar()
         self.selectedPreset = tk.StringVar()
+        self.devCycle = tk.StringVar()
+        self.devTime = tk.StringVar()
         # variables used to check conditions
         self.writeFlag = BooleanVar(value=False)
         self.processRunning = BooleanVar(value=False)
@@ -33,7 +35,7 @@ class MSIO(tk.Tk):
         self.PWM = gpiozero.PWMLED(6, frequency=60)
         self.controlState = 0 # 0 for not running, 1 for ramping, 2 for holding
         self.nextState = 0 # used to switch between ramp, hold, and off
-        self.debug = False # turns on or off debug print outs
+        self.debug = True # turns on or off debug print outs
         self.startTime = 0
         # variables used in open loop scaffolding
         self.error = 0
@@ -88,11 +90,12 @@ class MSIO(tk.Tk):
     def createWidgets(self):
 
         # define the 5 buttons
-        Button(self, text="Save", command=self.saveEntryPrompt, bg='blue').grid(column=1, row=3, **self.padding)
-        Button(self, text="Load Preset", command=self.loadEntryPopup, bg='blue').grid(column=1, row=4, **self.padding)
+        Button(self, text="Save", command=self.saveEntryPrompt, bg='blue', fg='#fff').grid(column=1, row=3, **self.padding)
+        Button(self, text="Load Preset", command=self.loadEntryPopup, bg='blue', fg='#fff').grid(column=1, row=4, **self.padding)
         Button(self, text="Run", command=self.confirmProcess, bg='green').grid(column=0, row=3, **self.padding)
         Button(self, text="Abort", command=self.abortProcess, bg='red').grid(column=0, row=4, **self.padding)
         Button(self, text="Close GUI", command=self.closeApp).grid(column=2, row=3, **self.padding)
+        Button(self, text="Run Dev Process", command=self.runDevEntry).grid(column=2, row=4, **self.padding)
 
         # define the 2 text entry fields
         ttk.Label(self, text="Target Temperature:").grid(column=0, row=0, sticky=E, **self.padding)
@@ -247,6 +250,49 @@ class MSIO(tk.Tk):
                         # begin the control loop
                         self.controlLoop()
 
+    def runDev(self):
+        # ensure a process is not already running
+        if self.processRunning == True:
+            showinfo(message="A process is already running! Wait for process to finish or abort the current process to run another.")
+            self.runPrompt.destroy()
+        else:
+            # get rid of the prompt
+            self.runDevPrompt.destroy()
+            # let the user know the process has begun
+            showinfo(message="Process will begin when this window is closed. Be cautious of hot materials!")
+            # convert the user inputs to floats
+            self.dutyCycle = float(self.devCycle.get()) / 100
+            self.processTime = float(self.devTime.get())
+            if self.debug == True:
+                print(self.dutyCycle)
+                print(self.processTime)
+            self.nextState = 2
+            # change the run flag to True
+            self.processRunning = True
+            # begin the control loop
+            self.controlLoop()
+            
+    def runDevEntry(self):
+        # open a popup
+        self.runDevPrompt = tk.Toplevel(self)
+        self.runDevPrompt.geometry("350x200")
+        self.runDevPrompt.title('Run Development Process')
+        # define the 2 text entry fields
+        ttk.Label(self.runDevPrompt, text="Duty Cycle: ").grid(column=0, row=0, sticky=E, **self.padding)
+        tempEntry = ttk.Entry(self.runDevPrompt, textvariable=self.devCycle).grid(column=1, row=0, sticky=E, **self.padding)
+        ttk.Label(self.runDevPrompt, text="percent").grid(column=2, row=0, sticky=W, **self.padding)
+
+        ttk.Label(self.runDevPrompt, text="Hold Time:").grid(column=0, row=1, sticky=E, **self.padding)
+        timeEntry = ttk.Entry(self.runDevPrompt, textvariable=self.devTime).grid(column=1, row=1, sticky=E, **self.padding)
+        ttk.Label(self.runDevPrompt, text="Minutes").grid(column=2, row=1, sticky=W, **self.padding)
+        
+        # prompt user for confirmation
+        Button(self.runDevPrompt, text="Run?", command=self.runDev, bg='green').grid(column = 1, row=3, **self.padding)
+        Button(self.runDevPrompt, text="Cancel", command=self.cancelDev, bg='red').grid(column = 1, row=4, **self.padding)
+        
+    def cancelDev(self):
+        self.runDevPrompt.destroy()
+        
     def abortProcess(self):
         # send a stop signal to the microwave
         self.PWM.off()
@@ -446,7 +492,7 @@ class MSIO(tk.Tk):
                         # the abort process button has been pushed and we need to stop
                         self.nextState = 0
                 # check time
-                elif self.currentTime() <= self.rampTime:
+                elif self.currentTime() <= self.rampTime * 60:
                         # timer has not expired, still ramping
                         self.nextState = 1
                 else:
@@ -456,7 +502,7 @@ class MSIO(tk.Tk):
                 if self.processRunning == False:
                         # the abort process button has been pushed and we need to stop
                         self.nextState = 0
-                elif self.currentTime() <= self.processTime:
+                elif self.currentTime() <= self.processTime * 60:
                         # timer has not expired, still holding
                         self.nextState = 2
                 else:
@@ -472,6 +518,10 @@ class MSIO(tk.Tk):
             elif self.nextState == 0:
                 # we don't need to do anything for this
                 pass
+            elif self.nextState == 2:
+                # this is directly to the dev loop
+                self.PWM.value = self.dutyCycle
+                self.startTime = time.monotonic()
         elif self.controlState == 1:
             if self.nextState == 1:
                 # looping back to continue ramping
@@ -516,11 +566,6 @@ class MSIO(tk.Tk):
     def debugFunc(self):
         print(self.lookUpRampTime(1200, 'hydroxyappatite.csv'))
         print(self.lookUpDutyCycle(1250, 'hydroxyappatite.csv'))
-            
-    def runMicrowave(self, time, dutyCycle):
-        timer = time.monotonic()
-        while (time.monotonic() - timer < time*60):
-            self.pwm.value = dutyCycle
     
     def closeLoopControl(self):
         # establish interation parameters
@@ -543,7 +588,6 @@ class MSIO(tk.Tk):
     def getTemp(self):
         # do stuff with some sensor to get the real time temp of the sample
         return 0
-            
             
 #run the app
 if __name__ == "__main__":
