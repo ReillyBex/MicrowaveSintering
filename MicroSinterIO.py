@@ -254,7 +254,7 @@ class MSIO(tk.Tk):
         # ensure a process is not already running
         if self.processRunning == True:
             showinfo(message="A process is already running! Wait for process to finish or abort the current process to run another.")
-            self.runPrompt.destroy()
+            self.runDevPrompt.destroy()
         else:
             # get rid of the prompt
             self.runDevPrompt.destroy()
