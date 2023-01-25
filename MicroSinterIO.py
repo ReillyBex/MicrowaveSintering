@@ -254,7 +254,7 @@ class MSIO(tk.Tk):
         # ensure a process is not already running
         if self.processRunning == True:
             showinfo(message="A process is already running! Wait for process to finish or abort the current process to run another.")
-            self.runDevPrompt.destroy()
+            self.runPrompt.destroy()
         else:
             # get rid of the prompt
             self.runDevPrompt.destroy()
@@ -558,6 +558,8 @@ class MSIO(tk.Tk):
         self.after(1000, self.controlLoop)
 
     def currentTime(self):
+        if self.debug:
+            print("current time is: " + str(time.monotonic()-self.startTime) + " seconds")
         return time.monotonic() - self.startTime
 
     def killApp(self):
