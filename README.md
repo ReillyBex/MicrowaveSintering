@@ -1,9 +1,14 @@
 # MicrowaveSintering
-Repository for the code that runs the microwave furnace. The main code block is the MicroSinterIOClass.py: this contains the code for the UI and the open loop control that is being used at the moment.  
+Repository for the code that runs the microwave furnace. The main code block is the MicroSinterIO.py: this contains the code for the UI and the open loop control that is being used at the moment.       
+
+Users will need to enable the pi GPIO deamon to run on boot. This can be done by running the following command from the command line:      
+ `
+ sudo systemctl enable pigpiod
+ `       
+ The pi can now be restarted, or the pi GPIO deamon manually started using:       
+ `sudo pigpiod start`        
   
-Other code that will (potentially) be added will be the scripts used to configure a raspberry pi from scratch and download all the necessary packages and what not.   
-  
-Alternatively, a compiled version of the GUI will be included here. This would allow future users to simply download the executable appimage and run it on any linux system with compatible hardware, removing the need for a user to download and properly configure packages before running the program.    
+A compiled version of the GUI will be included here. This would allow future users to simply download the executable appimage and run it on any linux system with compatible hardware, removing the need for a user to download and properly configure packages before running the program. This is created with a tool called "auto-py-to-exe". Simply use PIP to install it and run it from the command line. Helpful debugging info is found [here](https://nitratine.net/blog/post/issues-when-using-auto-py-to-exe/)             
 # Basic Overview
 The main window shows entry fields for holding temperature and hold time, and also contains a list of materials the user can select from. leaving these blank and attempting to hit the "run" button will result in an error.  
   
@@ -22,6 +27,8 @@ This closes the pop-up for running the process.
 This closes the pop-up for saving the entry fields.     
 ###### closeApp()   
 This turns off the PWM signal to the magnetron and closes the GUI by destroying the main window.     
+###### closeLoopControl()     
+This is basic code for a PID controller. This would necessitate some way of reading the temperature of the specimen each time through the control loop, which does not currently exist. Future users might acheive this, so I added it in for placeholding sake. 
 ###### confrimAbort()    
 This closes the pop-up that asks the user to confirm their intent to abort the process.     
 ###### confirmProcess()    
@@ -40,7 +47,9 @@ This has the logic to check for events based on the current state of the machine
 2. user aborts the process   
 When an event is detected, this function sets the appropriate next state of the machine, which is used by eventService().    
 ###### eventService()   
-This takes the current state and the specified next state and modifies machine parameters to transition correctly.    
+This takes the current state and the specified next state and modifies machine parameters to transition correctly.  
+###### getTemp()       
+This would get the real time temperature of the specimen if we had a way to do so. Needed in the closeLoopControl() function, so I added it in as a placeholder.      
 ###### killApp()
 This is the actual function that destroys the GUI. It is called by closeApp().     
 ###### loadEntryFields()    
@@ -54,7 +63,9 @@ This takes the input hold temperature and finds out how long it will take to rea
 ###### materialSelect()   
 This takes the selected material from the main GUI list and sets it to be the material for the process.    
 ###### presetSelect()   
-This takes the selected preset in the "load presets" pop-up and sets it to be split up by the loadEntryFields() function.    
+This takes the selected preset in the "load presets" pop-up and sets it to be split up by the loadEntryFields() function.      
+###### runMicrowave()      
+This allows users to run the microwave at the input duty cycle for the input amount of time in minutes. Must be called from executed code; not available in the compiled app. 
 ###### runProcess()   
 This starts the process running by using lookUpDutyCycle() and lookUpRampTime() to set the appropriate timers and steady state duty cycle to be sent to the magnetron.    
 ###### saveEntryFields()   
@@ -69,7 +80,5 @@ Testing to ensure that the look up tables placed in the materials directory func
 Also adding in more comprehensive checks to tell users if the tables provided are bad or need formating adjustments made. The look up functions expect a specific format and any changes from that precise layout will likely cause errors or some sort.    
         
 Obviously testing to generate better temperature profiles for hydroxyappatite so we can actually validate the model.   
-        
-Leaving in psuedocode for closed loop control if future groups want to implement that as well. 
-      
+    
 Perhaps a function that writes the look up table for the user? hmmmmmmmm. 
