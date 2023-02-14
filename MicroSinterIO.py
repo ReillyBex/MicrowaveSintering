@@ -7,6 +7,7 @@ from numpy import interp
 from tkinter import ttk
 from tkinter import *
 from tkinter.messagebox import showinfo
+from tkinter.messagebox import showwarning
 
 class MSIO(tk.Tk):
     def __init__(self):
@@ -130,7 +131,7 @@ class MSIO(tk.Tk):
     def saveEntryPrompt(self):
         # display a top level with the current values
         self.savePrompt = tk.Toplevel(self)
-        self.savePrompt.geometry("300x200")
+        self.savePrompt.geometry("300x200+400+230")
         self.savePrompt.columnconfigure(0, weight=1)
         self.savePrompt.title('Save these settings?')
 
@@ -149,7 +150,7 @@ class MSIO(tk.Tk):
     def loadEntryPopup(self):
         # open a popup
         self.loadPrompt = tk.Toplevel(self)
-        self.loadPrompt.geometry("300x200")
+        self.loadPrompt.geometry("300x200+400+230")
         self.loadPrompt.title('Saved Presets')
 
         # define the list box and scroll arrows
@@ -211,7 +212,7 @@ class MSIO(tk.Tk):
                     with open(self.presetFilePath, 'a') as self.preset:
                         self.preset.write(entry)
             else:
-                showinfo(message="Preset already exists.")
+                showwarning(message="Preset already exists.")
 
             # kill the prompt window
             self.savePrompt.destroy()
@@ -219,7 +220,7 @@ class MSIO(tk.Tk):
     def runProcess(self):
         # ensure a process is not already running
         if self.processRunning == True:
-            showinfo(message="A process is already running! Wait for process to finish or abort the current process to run another.")
+            showwarning(message="A process is already running! Wait for process to finish or abort the current process to run another.")
             self.runPrompt.destroy()
 
         else:
@@ -230,7 +231,7 @@ class MSIO(tk.Tk):
                 # get rid of the prompt
                 self.runPrompt.destroy()
                 # let the user know the process has begun
-                showinfo(message="Process will begin when this window is closed. Be cautious of hot materials!")
+                showwarning(message="Process will begin when this window is closed. Be cautious of hot materials!")
                 # convert the user inputs to floats
                 self.processTemp = float(self.targetTemp.get())
                 self.processTime = float(self.holdTime.get())
@@ -253,13 +254,13 @@ class MSIO(tk.Tk):
     def runDev(self):
         # ensure a process is not already running
         if self.processRunning == True:
-            showinfo(message="A process is already running! Wait for process to finish or abort the current process to run another.")
+            showwarning(message="A process is already running! Wait for process to finish or abort the current process to run another.")
             self.runPrompt.destroy()
         else:
             # get rid of the prompt
             self.runDevPrompt.destroy()
             # let the user know the process has begun
-            showinfo(message="Process will begin when this window is closed. Be cautious of hot materials!")
+            showwarning(message="Process will begin when this window is closed. Be cautious of hot materials!")
             # convert the user inputs to floats
             self.dutyCycle = float(self.devCycle.get()) / 100
             self.processTime = float(self.devTime.get())
@@ -275,7 +276,7 @@ class MSIO(tk.Tk):
     def runDevEntry(self):
         # open a popup
         self.runDevPrompt = tk.Toplevel(self)
-        self.runDevPrompt.geometry("350x200")
+        self.runDevPrompt.geometry("350x200+400+230")
         self.runDevPrompt.title('Run Development Process')
         # define the 2 text entry fields
         ttk.Label(self.runDevPrompt, text="Duty Cycle: ").grid(column=0, row=0, sticky=E, **self.padding)
@@ -326,7 +327,7 @@ class MSIO(tk.Tk):
     def confirmProcess(self):
         # display a top level that displays the current values
         self.runPrompt = tk.Toplevel(self)
-        self.runPrompt.geometry("300x200")
+        self.runPrompt.geometry("300x200+400+230")
         self.runPrompt.columnconfigure(0, weight=1)
         self.runPrompt.title('Confirm Process Parameters')
         text1 = "Hold Temp: " + self.targetTemp.get() + " Degrees Celcius"
