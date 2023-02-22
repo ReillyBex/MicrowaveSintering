@@ -79,4 +79,6 @@ Add a timer countdown for the process that is currently running.
            
 Change the PWM frequency to 0.1 or 0.2 (GPIO zero might not support that). 
        
-Also adding in more comprehensive checks to tell users if the tables provided are bad or need formating adjustments made. The look up functions expect a specific format and any changes from that precise layout will likely cause errors or some sort.    
+Also adding in more comprehensive checks to tell users if the tables provided are bad or need formating adjustments made. The look up functions expect a specific format and any changes from that precise layout will likely cause errors or some sort.   
+        
+This whole system could be launched as a web server similar to how Klipper works. This would allow users to simply launch a web browser from wherever is conveneient, and also remove the need to have any UI on the Pi itself. 
