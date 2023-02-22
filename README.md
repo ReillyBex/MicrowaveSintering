@@ -75,10 +75,8 @@ This creates a pop-up that displays the current process parameters and asks the 
 ###### validateParams()   
 This runs the currently input process parameters through various checks to ensure the parameters are actually usable by the program. It displays errors prompting the user to make the necessary changes so the process can run.    
 ### Future work   
-Testing to ensure that the look up tables placed in the materials directory function as expected.      
+Add a timer countdown for the process that is currently running.  
+           
+Change the PWM frequency to 0.1 or 0.2 (GPIO zero might not support that). 
        
 Also adding in more comprehensive checks to tell users if the tables provided are bad or need formating adjustments made. The look up functions expect a specific format and any changes from that precise layout will likely cause errors or some sort.    
-        
-Obviously testing to generate better temperature profiles for hydroxyappatite so we can actually validate the model.   
-    
-Perhaps a function that writes the look up table for the user? hmmmmmmmm. 
