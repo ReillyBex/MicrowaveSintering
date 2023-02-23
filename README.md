@@ -10,7 +10,9 @@ Once the Pi is booted for the first time it will need to be connected to the int
            
 Next, users will want to drag the app from the cloned MicrowaveSintering directory into the desktop for easy access. Finally, users will need to enable the pi GPIO deamon to run on boot. This can be done by running the following command from the command line: `sudo systemctl enable pigpiod`        
              
-The pi can now be restarted, or the pi GPIO deamon manually started using: `sudo pigpiod start`. The Pi should now be fully configured to run the GUI.         
+The pi can now be restarted, or the pi GPIO deamon manually started using: `sudo pigpiod start`. The Pi should now be fully configured to run the GUI.        
+          
+Once the pigpio daemon is started, the user should right click on the app on the desktop and navigate to permissions. Change the file to be executable by anyone and apply the change. Now when the user double clicks on the app a prompt will appear asking if the user wants to execute the file or execute from the command line. Choose to execute from the command line!         
         
 ## Other Tools
 The main code is compiled using a tool called "auto-py-to-exe". Simply use PIP to install it and run it from the command line. Helpful debugging info is found [here](https://nitratine.net/blog/post/issues-when-using-auto-py-to-exe/)   
