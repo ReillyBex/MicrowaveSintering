@@ -1,20 +1,21 @@
 # MicrowaveSintering
-Repository for the code that runs the microwave furnace. The main code block is the MicroSinterIO.py: this contains the code for the UI and the open loop control that is being used at the moment.       
+Repository for the code that runs the microwave furnace. The main code block is the MicroSinterIO.py: this contains the code for the UI and the open loop control that is being used at the moment. It is built on the tkinter library in python as this is a well supported and easy to use package. The main GUI window is configured as a 5x5 grid in which widgets are placed. The main widgets are: entry fields for the hold temp and hold time, as well as a material selection list; 6 buttons for functions such as saving and loading presets, running and aborting a process, closing the GUI window, and running a development process; and finally, readouts for the current state of the microwave and the timer associated with that state.       
 
-Users will need to enable the pi GPIO deamon to run on boot. This can be done by running the following command from the command line:      
- `
- sudo systemctl enable pigpiod
- `       
- The pi can now be restarted, or the pi GPIO deamon manually started using:       
- `sudo pigpiod start`        
-  
-A compiled version of the GUI will be included here. This would allow future users to simply download the executable appimage and run it on any linux system with compatible hardware, removing the need for a user to download and properly configure packages before running the program. This is created with a tool called "auto-py-to-exe". Simply use PIP to install it and run it from the command line. Helpful debugging info is found [here](https://nitratine.net/blog/post/issues-when-using-auto-py-to-exe/)             
-# Basic Overview
-The main window shows entry fields for holding temperature and hold time, and also contains a list of materials the user can select from. leaving these blank and attempting to hit the "run" button will result in an error.  
-  
-The top row of the preset file is a header line that shows what the collumns are. The user can mistakenly select this row, but attempting to "run" this process will again result in an error.  
-    
-The control loop recursively calls itself after one second, this allows the main GUI to stay open and accessible to the user while a process is running in the background. This way, a user can close the GUI or hit the "abort" button and the process will stop.  
+## Setting up the Pi
+They system runs by executing a compiled version of the code on a Rasberry Pi. Setting up the Raspberry Pi is fairly straight forward and numerous resources exist online to help future users recreate the environment needed to run the GUI. A basic outline will be included here to help guide future users to the proper resources.          
+         
+Visit [raspberrypi.com](https://www.raspberrypi.com/) and download the raspberry pi imager. Guides exist as well, but the process is as straightforward as plugging in a micro SD card, selecting the default operating system in imager (Raspberry Pi OS 32 bit), and flashing the image. Optional steps such as setting the default username and hostname are recommended, but not required.        
+       
+Once the Pi is booted for the first time it will need to be connected to the internet so that the repository can be cloned. Users could also use software such as WinSCP or even a thumb drive to move the repository onto the Pi, but the A+ version of the Pi currently in use only has one USB jack so inputs are limited. Personally, I installed a USB WiFi dongle and used ssh to clone the repository from the command line after identifying the Pi on my local network. The command to clone the repository from the command line is: `git clone https://github.com/ReillyBex/MicrowaveSintering.git`. This command will clone the repository to the home directory. It is also recommended to run the commands: `sudo apt-get update && sudo apt-get upgrade` to ensure that the Pi is running on the most up to date packages. This step can be ommitted, but if future problems arise this is a good place to start.       
+           
+Next, users will want to drag the app from the cloned MicrowaveSintering directory into the desktop for easy access. Finally, users will need to enable the pi GPIO deamon to run on boot. This can be done by running the following command from the command line: `sudo systemctl enable pigpiod`        
+             
+The pi can now be restarted, or the pi GPIO deamon manually started using: `sudo pigpiod start`. The Pi should now be fully configured to run the GUI.         
+        
+## Other Tools
+The main code is compiled using a tool called "auto-py-to-exe". Simply use PIP to install it and run it from the command line. Helpful debugging info is found [here](https://nitratine.net/blog/post/issues-when-using-auto-py-to-exe/)   
+            
+The app is configured to compile as a single file that runs from the terminal. It should have a name resembling "MicroSinterIO", though that may change in the future. The app is currently not optimized to run on the 512mB of RAM on the Pi A+, so the current load times are slow. However, realistically the app will only need to be opened once as the Pi is directly connected to the microwaves AC power and will remain on as long as the microwave is plugged in. 
   
 ### Details of class attributes (in alphebetical order)
 ###### __init__  
@@ -73,12 +74,12 @@ This takes the current values of the run parameters and generates an entry. If t
 ###### saveEntryPrompt() 
 This creates a pop-up that displays the current process parameters and asks the user to confirm or cancel the save function.     
 ###### validateParams()   
-This runs the currently input process parameters through various checks to ensure the parameters are actually usable by the program. It displays errors prompting the user to make the necessary changes so the process can run.    
+This runs the currently input process parameters through various checks to ensure the parameters are actually usable by the program. It displays errors prompting the user to make the necessary changes so the process can run.         
+###### updateTimer()       
+This updates the countdown timer on the main GUI. It uses ramp time or process time depending on the state, and uses a function called divmod() to convert the raw seconds of the timer into minutes + seconds. 
 ### Future work   
-Add a timer countdown for the process that is currently running.  
+I would like to have the 3 main sections of the GUI visually broken up somehow, perhaps using frames? Overall the GUI looks basic and could use some polish.   
+             
+Better optimization to minimize RAM usage on the Pi. Perhaps only import the packages needed as opposed to the whole tkinter suite?            
            
-Change the PWM frequency to 0.1 or 0.2 (GPIO zero might not support that). 
-       
-Also adding in more comprehensive checks to tell users if the tables provided are bad or need formating adjustments made. The look up functions expect a specific format and any changes from that precise layout will likely cause errors or some sort.   
-        
 This whole system could be launched as a web server similar to how Klipper works. This would allow users to simply launch a web browser from wherever is conveneient, and also remove the need to have any UI on the Pi itself. 
