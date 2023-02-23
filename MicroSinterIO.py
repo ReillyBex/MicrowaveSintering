@@ -25,6 +25,8 @@ class MSIO(tk.Tk):
         self.selectedPreset = tk.StringVar()
         self.devCycle = tk.StringVar()
         self.devTime = tk.StringVar()
+        self.dispState = tk.StringVar()
+        self.dispState.set("Idle")
         # variables used to check conditions
         self.writeFlag = BooleanVar(value=False)
         self.processRunning = BooleanVar(value=False)
@@ -33,12 +35,17 @@ class MSIO(tk.Tk):
         self.rampTime = 0
         self.processTemp = 0
         self.processTime =0
-        self.PWM = gpiozero.PWMLED(13, frequency=60)
+        self.PWM = gpiozero.PWMLED(13, frequency=0.1)
         self.controlState = 0 # 0 for not running, 1 for ramping, 2 for holding
         self.nextState = 0 # used to switch between ramp, hold, and off
-        self.debug = True # turns on or off debug print outs
+        self.debug = False # turns on or off debug print outs
         self.startTime = 0
-        # variables used in open loop scaffolding
+        # variables used in the countdown timer
+        self.minute = tk.StringVar()
+        self.minute.set("00")
+        self.second = tk.StringVar()
+        self.second.set("00")
+        # variables used in closed loop scaffolding
         self.error = 0
         self.lastError = 0
         self.kp = 1
@@ -50,10 +57,12 @@ class MSIO(tk.Tk):
         self.presetFilePath = self.currentDirectory + '/presetParams.txt'
         self.materialsDirectory = self.currentDirectory + '/materials'
 
-        # set up the app grid to be 3 x 5
+        # set up the app grid to be 5 x 5
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
+        self.columnconfigure(3, weight=1)
+        self.columnconfigure(4, weight=1)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
         self.rowconfigure(2, weight=1)
@@ -106,6 +115,16 @@ class MSIO(tk.Tk):
         ttk.Label(self, text="Hold Time:").grid(column=0, row=1, sticky=E, **self.padding)
         timeEntry = ttk.Entry(self, textvariable=self.holdTime).grid(column=1, row=1, sticky=E, **self.padding)
         ttk.Label(self, text="Minutes").grid(column=2, row=1, sticky=W, **self.padding)
+        
+        # define the state display and the timer
+        ttk.Label(self, text="Current State").grid(column=3, row=1, sticky=E, **self.padding)
+        dispStateEntry = ttk.Entry(self, textvariable=self.dispState).grid(column=4, row=1, sticky=W, **self.padding)
+        
+        ttk.Label(self, text="Minutes: ").grid(column=3, row=2, sticky=E, **self.padding)
+        minuiteEntry = ttk.Entry(self, width=4, textvariable=self.minute).grid(column=4, row=2, sticky=W, **self.padding)
+        
+        ttk.Label(self, text="Seconds: ").grid(column=3, row=3, sticky=E, **self.padding)
+        secondEntry = ttk.Entry(self, width=4, textvariable=self.second).grid(column=4, row=3, sticky=W, **self.padding)
 
         # define the list box and scroll arrows
         materialScroll = ttk.Scrollbar(self)
@@ -516,6 +535,7 @@ class MSIO(tk.Tk):
                 self.PWM.value = 1
                 self.startTime = time.monotonic()
                 #self.pidTimer = time.monotonic()
+                self.dispState.set("Ramping")
             elif self.nextState == 0:
                 # we don't need to do anything for this
                 pass
@@ -523,17 +543,23 @@ class MSIO(tk.Tk):
                 # this is directly to the dev loop
                 self.PWM.value = self.dutyCycle
                 self.startTime = time.monotonic()
+                self.dispState.set("Holding")
+                
         elif self.controlState == 1:
             if self.nextState == 1:
                 # looping back to continue ramping
                 pass
             elif self.nextState == 2:
                 # switching to hold temp
+                self.startTime = time.monotonic()
                 self.PWM.value = self.dutyCycle
+                self.dispState.set("Holding")
             elif self.nextState == 0:
                 # process is aborted, turn things off
                 self.dutyCycle = 0
                 self.PWM.value = 0
+                self.dispState.set("Idle")
+                
         elif self.controlState == 2:
             if self.nextState == 2:
                 # looping back to continue holding
@@ -544,6 +570,7 @@ class MSIO(tk.Tk):
                 # process is over, turn things off
                 self.dutyCycle = 0
                 self.PWM.value = 0
+                self.dispState.set("Idle")
                 # set the flag back to false so we can start another process
                 self.processRunning = False
         self.controlState = self.nextState
@@ -556,6 +583,9 @@ class MSIO(tk.Tk):
             print(self.nextState)
             print('\n')
         self.eventService()
+        self.updateTimer()
+        # update the GUI to show any new values
+        self.update()
         self.after(1000, self.controlLoop)
 
     def currentTime(self):
@@ -565,33 +595,52 @@ class MSIO(tk.Tk):
 
     def killApp(self):
         self.destroy()
-
-    def debugFunc(self):
-        print(self.lookUpRampTime(1200, 'hydroxyappatite.csv'))
-        print(self.lookUpDutyCycle(1250, 'hydroxyappatite.csv'))
-    
-    def closeLoopControl(self):
-        # establish interation parameters
-        self.error = self.processTemp - getTemp()
-        dt = time.monotonic() - self.pidTimer
-        prop = self.error
-        integral = integral + (self.error * dt)
-        derivative = (self.error - self.lastError) / dt
-        # perform output calculation
-        self.dutyCycle = (self.kp * prop) + (self.kd * derivative) + (self.ki * integral)
-        # replace iteration terms for next cycle
-        self.pidTimer = time.monotonic()
-        self.lastError = self.error
-        # limit output value
-        if self.dutyCycle > 1:
-                self.dutyCycle = 1
-        if self.dutyCycle < 0:
-                self.dutyCycle = 0
         
-    def getTemp(self):
-        # do stuff with some sensor to get the real time temp of the sample
-        return 0
-            
+    def updateTimer(self):
+        # update the timer displayed on the GUI
+        # state dependent: need to display ramp time and hold time timers
+        if self.controlState == 1:
+                timer = (self.rampTime * 60) - self.currentTime()
+        elif self.controlState == 2:
+                timer = (self.processTime * 60) - self.currentTime()
+        else:
+                timer = 0
+                
+        mins,secs = divmod(timer, 60)
+        
+        self.minute.set("{an:.1f}".format(an = mins))
+        self.second.set("{an:.1f}".format(an = secs))
+
+    # def debugFunc(self):
+        # #print(self.lookUpRampTime(1200, 'hydroxyappatite.csv'))
+        # #print(self.lookUpDutyCycle(1250, 'hydroxyappatite.csv'))
+
+    # def closeLoopControl(self):
+        # # establish interation parameters
+        # self.error = self.processTemp - getTemp()
+        # dt = time.monotonic() - self.pidTimer
+        # prop = self.error
+        # integral = integral + (self.error * dt)
+        # derivative = (self.error - self.lastError) / dt
+        # # perform output calculation
+        # self.dutyCycle = (self.kp * prop) + (self.kd * derivative) + (self.ki * integral)
+        # # replace iteration terms for next cycle
+        # self.pidTimer = time.monotonic()
+        # self.lastError = self.error
+        # # limit output value
+        # if self.dutyCycle > 1:
+                # self.dutyCycle = 1
+        # if self.dutyCycle < 0:
+                # self.dutyCycle = 0
+        
+
+    # def getTemp(self):
+        # # do stuff with some sensor to get the real time temp of the sample
+        # return 0
+
+    
+
+        
 #run the app
 if __name__ == "__main__":
     app = MSIO()
