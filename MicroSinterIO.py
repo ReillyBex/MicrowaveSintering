@@ -100,11 +100,11 @@ class MSIO(tk.Tk):
         self.frequencyPrompt = tk.Toplevel(self)
         self.frequencyPrompt.geometry("350x200+400+230")
         self.frequencyPrompt.title('Set PWM frequency')
-        # define the 2 text entry fields
-        ttk.Label(self.runDevPrompt, text="Frequency: ").grid(column=0, row=0, sticky=E, **self.padding)
+        # define the text entry fields
+        ttk.Label(self.frequencyPrompt, text="Frequency: ").grid(column=0, row=0, sticky=E, **self.padding)
         tempEntry = ttk.Entry(self.frequencyPrompt, textvariable=self.frequency).grid(column=1, row=0, sticky=E, **self.padding)
-        ttk.Label(self.frequencyPrompt, text="percent").grid(column=2, row=0, sticky=W, **self.padding)
-        Button(self.frequencyPrompt, text="Set", command=self.frequencyPrompt.kill, bg='green').grid(row=3, **self.padding)
+        ttk.Label(self.frequencyPrompt, text="Hz").grid(column=2, row=0, sticky=W, **self.padding)
+        Button(self.frequencyPrompt, text="Set", command=self.setFrequency, bg='green').grid(column=1, row=1, **self.padding)
 
         # start the control loop in the background
         self.controlLoop()
@@ -622,6 +622,14 @@ class MSIO(tk.Tk):
         
         self.minute.set("{an:.1f}".format(an = mins))
         self.second.set("{an:.1f}".format(an = secs))
+
+    def setFrequency(self):
+        #set the frequency from the entry field
+        self.frequency.get()
+        self.PWM = gpiozero.PWMLED(13, self.frequency)
+
+        # kill the pop up
+        self.frequencyPrompt.destroy()
 
     # def debugFunc(self):
         # #print(self.lookUpRampTime(1200, 'hydroxyappatite.csv'))
