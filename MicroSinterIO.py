@@ -34,8 +34,10 @@ class MSIO(tk.Tk):
         self.dutyCycle = 0
         self.rampTime = 0
         self.processTemp = 0
-        self.processTime =0
-        self.PWM = gpiozero.PWMLED(13, frequency=0.1)
+        self.processTime = 0
+        self.frequency = tk.StringVar()
+        self.frequency.set(1)
+        self.PWM = gpiozero.PWMLED(13, self.frequency)
         self.controlState = 0 # 0 for not running, 1 for ramping, 2 for holding
         self.nextState = 0 # used to switch between ramp, hold, and off
         self.debug = False # turns on or off debug print outs
@@ -93,6 +95,16 @@ class MSIO(tk.Tk):
 
         # create the primary widgets
         self.createWidgets()
+
+        # ask the user to set the PWM frequency
+        self.frequencyPrompt = tk.Toplevel(self)
+        self.frequencyPrompt.geometry("350x200+400+230")
+        self.frequencyPrompt.title('Set PWM frequency')
+        # define the 2 text entry fields
+        ttk.Label(self.runDevPrompt, text="Frequency: ").grid(column=0, row=0, sticky=E, **self.padding)
+        tempEntry = ttk.Entry(self.frequencyPrompt, textvariable=self.frequency).grid(column=1, row=0, sticky=E, **self.padding)
+        ttk.Label(self.frequencyPrompt, text="percent").grid(column=2, row=0, sticky=W, **self.padding)
+        Button(self.frequencyPrompt, text="Set", command=self.frequencyPrompt.kill, bg='green').grid(row=3, **self.padding)
 
         # start the control loop in the background
         self.controlLoop()
