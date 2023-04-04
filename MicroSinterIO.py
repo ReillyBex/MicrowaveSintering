@@ -35,9 +35,10 @@ class MSIO(tk.Tk):
         self.rampTime = 0
         self.processTemp = 0
         self.processTime = 0
-        self.frequency = tk.StringVar()
-        self.frequency.set(1)
-        self.PWM = gpiozero.PWMLED(13, self.frequency)
+        self.period = 10
+        self.LED = gpiozero.LED(13)
+        self.onTime = 0
+        self.offTime = 0
         self.controlState = 0 # 0 for not running, 1 for ramping, 2 for holding
         self.nextState = 0 # used to switch between ramp, hold, and off
         self.debug = False # turns on or off debug print outs
@@ -95,16 +96,6 @@ class MSIO(tk.Tk):
 
         # create the primary widgets
         self.createWidgets()
-
-        # ask the user to set the PWM frequency
-        self.frequencyPrompt = tk.Toplevel(self)
-        self.frequencyPrompt.geometry("350x200+400+230")
-        self.frequencyPrompt.title('Set PWM frequency')
-        # define the text entry fields
-        ttk.Label(self.frequencyPrompt, text="Frequency: ").grid(column=0, row=0, sticky=E, **self.padding)
-        tempEntry = ttk.Entry(self.frequencyPrompt, textvariable=self.frequency).grid(column=1, row=0, sticky=E, **self.padding)
-        ttk.Label(self.frequencyPrompt, text="Hz").grid(column=2, row=0, sticky=W, **self.padding)
-        Button(self.frequencyPrompt, text="Set", command=self.setFrequency, bg='green').grid(column=1, row=1, **self.padding)
 
         # start the control loop in the background
         self.controlLoop()
@@ -327,7 +318,7 @@ class MSIO(tk.Tk):
         
     def abortProcess(self):
         # send a stop signal to the microwave
-        self.PWM.off()
+        self.LED.off()
         self.dutyCycle = 0.0
 
         # set the run flag to False
@@ -426,7 +417,7 @@ class MSIO(tk.Tk):
 
     def closeApp(self):
         # send a stop signal to the microwave
-        self.PWM.off()
+        self.LED.off()
         self.dutyCycle = 0.0
         # display a message about closing the app
         self.closePopup = tk.Toplevel(self)
@@ -544,7 +535,7 @@ class MSIO(tk.Tk):
     def eventService(self):
         if self.controlState == 0:
             if self.nextState == 1:
-                self.PWM.value = 1
+                self.LED.on()
                 self.startTime = time.monotonic()
                 #self.pidTimer = time.monotonic()
                 self.dispState.set("Ramping")
@@ -553,7 +544,8 @@ class MSIO(tk.Tk):
                 pass
             elif self.nextState == 2:
                 # this is directly to the dev loop
-                self.PWM.value = self.dutyCycle
+                self.getOnOffTimes(self.dutyCycle)
+                self.LED.blink(on_time=self.onTime, off_time=self.offTime)
                 self.startTime = time.monotonic()
                 self.dispState.set("Holding")
                 
@@ -564,12 +556,13 @@ class MSIO(tk.Tk):
             elif self.nextState == 2:
                 # switching to hold temp
                 self.startTime = time.monotonic()
-                self.PWM.value = self.dutyCycle
+                self.getOnOffTimes(self.dutyCycle)
+                self.LED.blink(on_time=self.onTime, off_time=self.offTime)
                 self.dispState.set("Holding")
             elif self.nextState == 0:
                 # process is aborted, turn things off
                 self.dutyCycle = 0
-                self.PWM.value = 0
+                self.LED.off()
                 self.dispState.set("Idle")
                 
         elif self.controlState == 2:
@@ -581,7 +574,7 @@ class MSIO(tk.Tk):
             elif self.nextState == 0:
                 # process is over, turn things off
                 self.dutyCycle = 0
-                self.PWM.value = 0
+                self.LED.off()
                 self.dispState.set("Idle")
                 # set the flag back to false so we can start another process
                 self.processRunning = False
@@ -623,13 +616,11 @@ class MSIO(tk.Tk):
         self.minute.set("{an:.1f}".format(an = mins))
         self.second.set("{an:.1f}".format(an = secs))
 
-    def setFrequency(self):
-        #set the frequency from the entry field
-        self.frequency.get()
-        self.PWM = gpiozero.PWMLED(13, self.frequency)
+    def getOnOffTimes(self, dutyCycle):
+        # take the period and the duty cycle and calculate the on/off time ratio in seconds
+        self.onTime = self.period * dutyCycle
+        self.offTime = self.period - self.onTime 
 
-        # kill the pop up
-        self.frequencyPrompt.destroy()
 
     # def debugFunc(self):
         # #print(self.lookUpRampTime(1200, 'hydroxyappatite.csv'))
