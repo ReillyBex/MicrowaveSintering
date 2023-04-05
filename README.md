@@ -6,7 +6,7 @@ They system runs by executing a compiled version of the code on a Rasberry Pi. S
          
 Visit [raspberrypi.com](https://www.raspberrypi.com/) and download the raspberry pi imager. Guides exist as well, but the process is as straightforward as plugging in a micro SD card, selecting the default operating system in imager (Raspberry Pi OS 32 bit), and flashing the image. Optional steps such as setting the default username and hostname are recommended, but not required.        
        
-Once the Pi is booted for the first time it will need to be connected to the internet so that the repository can be cloned. Users could also use software such as WinSCP or even a thumb drive to move the repository onto the Pi, but the A+ version of the Pi currently in use only has one USB jack so inputs are limited. Personally, I installed a USB WiFi dongle and used ssh to clone the repository from the command line after identifying the Pi on my local network. The command to clone the repository from the command line is: `git clone https://github.com/ReillyBex/MicrowaveSintering.git`. This command will clone the repository to the home directory. It is also recommended to run the commands: `sudo apt-get update && sudo apt-get upgrade` to ensure that the Pi is running on the most up to date packages. This step can be ommitted, but if future problems arise this is a good place to start.       
+Once the Pi is booted for the first time it will need to be connected to the internet so that the repository can be cloned. Users could also use software such as WinSCP or even a thumb drive to move the repository onto the Pi, but the A+ version of the Pi currently in use only has one USB jack so inputs are limited. Personally, I used ssh to clone the repository from the command line after identifying the Pi on my local network. The command to clone the repository from the command line is: `git clone https://github.com/ReillyBex/MicrowaveSintering.git`. This command will clone the repository to the home directory. It is also recommended to run the commands: `sudo apt-get update && sudo apt-get upgrade` to ensure that the Pi is running on the most up to date packages. This step can be ommitted, but if future problems arise this is a good place to start.       
            
 Next, users will want to drag the app from the cloned MicrowaveSintering directory into the desktop for easy access. Finally, users will need to enable the pi GPIO deamon to run on boot. This can be done by running the following command from the command line: `sudo systemctl enable pigpiod`        
              
@@ -85,3 +85,9 @@ I would like to have the 3 main sections of the GUI visually broken up somehow, 
 Better optimization to minimize RAM usage on the Pi. Perhaps only import the packages needed as opposed to the whole tkinter suite?            
            
 This whole system could be launched as a web server similar to how Klipper works. This would allow users to simply launch a web browser from wherever is conveneient, and also remove the need to have any UI on the Pi itself. 
+         
+Much of the Tkinter experience has been clunky. I had to make multiple functions to do essentially one job: one makes the pop up, one reads the user input, one kills the pop up. A subclass that handles all of that could be nice, but it wouldn't necessarily improve the users experience so it might not matter that much.       
+           
+##### Contact Info
+Reilly Beckstrand: u1330099@utah.edu
+You can alternatively try messaging me on GitHub or open an issue or pull request and I'll probably see it eventually. 
