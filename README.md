@@ -23,7 +23,9 @@ The app is configured to compile as a single file that runs from the terminal. I
 ###### __init__  
 This initializes the GUI object, setting the default values for class variables and calling the createWidgets() function to generate the main widgets.   
 ###### abortProcess()    
-This sets the signal to the magnetron off and also sets the logic flag that indicates a process is running to false *wether or not a process was running in the first place*.    
+This sets the signal to the magnetron off and also sets the logic flag that indicates a process is running to false *wether or not a process was running in the first place*.     
+###### cancelDev()        
+This closes the pop-up for running a dev process. 
 ###### cancelRun()   
 This closes the pop-up for running the process.     
 ###### cancelSave()    
@@ -50,15 +52,17 @@ This has the logic to check for events based on the current state of the machine
 2. user aborts the process           
 When an event is detected, this function sets the appropriate next state of the machine, which is used by eventService().    
 ###### eventService()   
-This takes the current state and the specified next state and modifies machine parameters to transition correctly.  
+This takes the current state and the specified next state and modifies machine parameters to transition correctly.      
+###### getOnOffTimes(dutyCycle)            
+This takes in the period of the signal and calculates the on time and off time from the input duty cycle. 
 ###### getTemp()       
 This would get the real time temperature of the specimen if we had a way to do so. Needed in the closeLoopControl() function, so I added it in as a placeholder.      
 ###### killApp()
 This is the actual function that destroys the GUI. It is called by closeApp().     
 ###### loadEntryFields()    
-This takes the selected entry of the presets and splits it into the appropriate parameters. It also closes the pop-up from which the user selects a preset.     
+This takes the selected entry of the presets and splits it into the appropriate parameters. It also closes the pop-up from which the user selects a preset.   
 ###### loadEntryPopup()
-This generates a pop-up with a scoll list that displays all the saved presets. The user can then select one and load it into the process parameters to be run.     
+This generates a pop-up with a scoll list that displays all the saved presets. The user can then select one and load it into the process parameters to be run.    
 ###### lookUpDutyCycle(temperature, material)    
 This takes the input hold temp and finds out what duty cycle has that as it's steady state temperature. It creates a list of the last temperature in each row of measurements, which we are assuming to be steady state temperatures. Once this list has been generated, it then checks if the items in that list of temperatures are within the specified tolerance of the input hold temperature. It calculates the duty cycle if it is, and returns 0 if not. 
 ###### lookUpRampTime(temperature, material)   
@@ -67,8 +71,10 @@ This takes the input hold temperature and finds out how long it will take to rea
 This takes the selected material from the main GUI list and sets it to be the material for the process.    
 ###### presetSelect()   
 This takes the selected preset in the "load presets" pop-up and sets it to be split up by the loadEntryFields() function.      
-###### runMicrowave()      
-This allows users to run the microwave at the input duty cycle for the input amount of time in minutes. Must be called from executed code; not available in the compiled app. 
+###### runDev()      
+This allows users to run the microwave at the input duty cycle for the input amount of time in minutes.      
+###### runDevEntry()           
+This makes the pop up that requests user input for the duty cycle and hold time.        
 ###### runProcess()   
 This starts the process running by using lookUpDutyCycle() and lookUpRampTime() to set the appropriate timers and steady state duty cycle to be sent to the magnetron.    
 ###### saveEntryFields()   
@@ -93,6 +99,6 @@ This whole system could be launched as a web server similar to how Klipper works
          
 Much of the Tkinter experience has been clunky. I had to make multiple functions to do essentially one job: one makes the pop up, one reads the user input, one kills the pop up. A subclass that handles all of that could be nice, but it wouldn't necessarily improve the users experience so it might not matter that much.       
            
-##### Contact Info
+### Contact Info
 Reilly Beckstrand: u1330099@utah.edu
 You can alternatively try messaging me on GitHub or open an issue or pull request and I'll probably see it eventually. 
