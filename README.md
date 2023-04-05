@@ -23,13 +23,13 @@ The app is configured to compile as a single file that runs from the terminal. I
 ###### __init__  
 This initializes the GUI object, setting the default values for class variables and calling the createWidgets() function to generate the main widgets.   
 ###### abortProcess()    
-This sets the PWM signal to the magnetron off and also sets the logic flag that indicates a process is running to false *wether or not a process was running in the first place*.    
+This sets the signal to the magnetron off and also sets the logic flag that indicates a process is running to false *wether or not a process was running in the first place*.    
 ###### cancelRun()   
 This closes the pop-up for running the process.     
 ###### cancelSave()    
 This closes the pop-up for saving the entry fields.     
 ###### closeApp()   
-This turns off the PWM signal to the magnetron and closes the GUI by destroying the main window.     
+This turns off the signal to the magnetron and closes the GUI by destroying the main window.     
 ###### closeLoopControl()     
 This is basic code for a PID controller. This would necessitate some way of reading the temperature of the specimen each time through the control loop, which does not currently exist. Future users might acheive this, so I added it in for placeholding sake. 
 ###### confrimAbort()    
@@ -39,7 +39,7 @@ This shows the currently entered parameters and asks the user to confirm them an
 ###### controlLoop()    
 This is the state machine loop for controlling the process. It contails the functions eventCheck() and eventService(), as well as an event that calls itself after 1 second has passed. This allows the control loop to run in the background and leaves the main window accessible to the user.    
 ###### createWidgets()    
-This creates the entry boxes, the material selection list, as well as the 5 buttons on the main window.    
+This creates the entry boxes, the material selection list, as well as the 6 buttons on the main window.    
 ###### currentTime()   
 This gets the current time relative to the start of the process. a variable called self.tempTime is set with time.monotonic() in the control loop to be the time that each state begins. This is then compared to the current value of time.monotonic() and the difference is divided by 60 to return minutes since that is what the user inputs and the look up tables are coded for. 
 ###### debugFunc()     
@@ -47,7 +47,7 @@ This is just a function that can be filled with anything you want to debug. It i
 ###### eventCheck()   
 This has the logic to check for events based on the current state of the machine. Events are: 
 1. timer expiers
-2. user aborts the process   
+2. user aborts the process           
 When an event is detected, this function sets the appropriate next state of the machine, which is used by eventService().    
 ###### eventService()   
 This takes the current state and the specified next state and modifies machine parameters to transition correctly.  
@@ -79,6 +79,11 @@ This creates a pop-up that displays the current process parameters and asks the 
 This runs the currently input process parameters through various checks to ensure the parameters are actually usable by the program. It displays errors prompting the user to make the necessary changes so the process can run.         
 ###### updateTimer()       
 This updates the countdown timer on the main GUI. It uses ramp time or process time depending on the state, and uses a function called divmod() to convert the raw seconds of the timer into minutes + seconds. 
+
+#### Notes on GPIOzero
+We first intended to use PWMLED from GPIOzero since we wanted to do pulse width modulation.... duh. BUT, it turns out that the frequency parameter fed to that constructor needs to be an integer value, and so our decimal value was being overridden and defualted back to 100Hz, causing issues.         
+Instead, the LED output devide and the blink() method were used. This required adding a function to take the duty cycle and find the on and off times from the desired period of the signal. It has the added benefit of using the Threading library to function in the background! 
+
 ### Future work   
 I would like to have the 3 main sections of the GUI visually broken up somehow, perhaps using frames? Overall the GUI looks basic and could use some polish.   
              
