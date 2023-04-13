@@ -282,7 +282,7 @@ class MSIO(tk.Tk):
             # get rid of the prompt
             self.runDevPrompt.destroy()
             # let the user know the process has begun
-            showwarning(message="Process will begin when this window is closed. Be cautious of hot materials!")
+            showwarning(message="Process will begin when this window is closed. Be sure to turn on the green toggle switch!")
             # convert the user inputs to floats
             self.dutyCycle = float(self.devCycle.get()) / 100
             self.processTime = float(self.devTime.get())
@@ -327,7 +327,7 @@ class MSIO(tk.Tk):
         # display a message about closing the app
         self.abortPopup = tk.Toplevel(self)
         self.abortPopup.columnconfigure(0, weight=1)
-        ttk.Label(self.abortPopup, text="The process was aborted. Be cautious of potentially hot materials!").grid(row=0, **self.padding)
+        ttk.Label(self.abortPopup, text="The process was aborted. Be cautious of potentially hot materials! Leave the turntable and fan running to cool things off.").grid(row=0, **self.padding)
         Button(self.abortPopup, text="Return to GUI", command=self.confirmAbort).grid(row=1, **self.padding)
 
     def materialSelect(self, event):
