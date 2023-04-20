@@ -17,7 +17,12 @@ Once the pigpio daemon is started, the user should right click on the app on the
 ## Other Tools
 The main code is compiled using a tool called "auto-py-to-exe". Simply use PIP to install it and run it from the command line. Helpful debugging info is found [here](https://nitratine.net/blog/post/issues-when-using-auto-py-to-exe/)   
             
-The app is configured to compile as a single file that runs from the terminal. It should have a name resembling "MicroSinterIO", though that may change in the future. The app is currently not optimized to run on the 512mB of RAM on the Pi A+, so the current load times are slow. However, realistically the app will only need to be opened once as the Pi is directly connected to the microwaves AC power and will remain on as long as the microwave is plugged in. 
+The app is configured to compile as a single file that runs from the terminal. It should have a name resembling "MicroSinterIO", though that may change in the future. The app is currently not optimized to run on the 512mB of RAM on the Pi A+, so the current load times are slow. However, realistically the app will only need to be opened once as the Pi is directly connected to the microwaves AC power and will remain on as long as the microwave is plugged in.        
+
+## Using the Microwave          
+Once the desktop environment has been loaded (task bar has loaded in the bottom of the screen), tap the app 4 times to get a pop up that asks how you would like to execute the code. Select the option that runs it in the terminal. It takes about a minute to unpack all the assets and load the GUI.        
+         
+Once the GUI you will see 6 main buttons: run, abort, save parameters, load presets, close GUI, run dev process. On the right you will also see a display that shows you the current state of the microwave, and a timer that shows you how long the process has left to run. Most of the buttons are self explanetory, or will tell you if things are not in the correct format. Run dev allows you to turn on the magnetron at the specified duty cycle for the input time. Basically, it's just like using a normal microwave, no need to have material presets loaded or anything. We used this to test new duty cycles and perform material characterization tests. 
   
 ### Details of class attributes (in alphebetical order)
 ###### __init__  
